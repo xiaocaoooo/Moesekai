@@ -23,6 +23,26 @@ export type SupportUnit =
     | "theme_park"
     | "street";
 
+// Support Unit display names (for virtual singers)
+export const SUPPORT_UNIT_NAMES: Record<SupportUnit, string> = {
+    "none": "原版",
+    "light_sound": "Leo/need",
+    "idol": "MORE MORE JUMP!",
+    "school_refusal": "25時、ナイトコードで。",
+    "theme_park": "Wonderlands×Showtime",
+    "street": "Vivid BAD SQUAD",
+};
+
+// Support Unit to Unit ID mapping (for icons)
+export const SUPPORT_UNIT_TO_UNIT_ID: Record<SupportUnit, string | null> = {
+    "none": null,
+    "light_sound": "ln",
+    "idol": "mmj",
+    "school_refusal": "25ji",
+    "theme_park": "ws",
+    "street": "vbs",
+};
+
 export interface ICardInfo {
     id: number;
     seq: number;

@@ -13,6 +13,7 @@ import {
     isTrainableCard,
     getRarityNumber,
     CardAttribute,
+    SUPPORT_UNIT_NAMES,
 } from "@/types/types";
 import { getCardFullUrl, getCardThumbnailUrl, getEventBannerUrl, getGachaBannerUrl, getGachaLogoUrl, getCardGachaVoiceUrl } from "@/lib/assets";
 import { useRef } from "react";
@@ -652,6 +653,36 @@ export default function CardDetailPage() {
                                     label="内部资源名称"
                                     value={<span className="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">{card.assetbundleName}</span>}
                                 />
+                                {/* Support Unit - Only for Virtual Singers (characterId >= 21) */}
+                                {card.characterId >= 21 && (
+                                    <InfoRow
+                                        label="团体归属"
+                                        value={
+                                            <div className="flex items-center gap-2">
+                                                {card.supportUnit !== "none" && (
+                                                    <div className="w-5 h-5 relative">
+                                                        <Image
+                                                            src={`/data/icon/${{
+                                                                "light_sound": "ln.webp",
+                                                                "idol": "mmj.webp",
+                                                                "school_refusal": "n25.webp",
+                                                                "theme_park": "wxs.webp",
+                                                                "street": "vbs.webp",
+                                                            }[card.supportUnit]}`}
+                                                            alt={SUPPORT_UNIT_NAMES[card.supportUnit]}
+                                                            fill
+                                                            className="object-contain"
+                                                            unoptimized
+                                                        />
+                                                    </div>
+                                                )}
+                                                <span className={card.supportUnit === "none" ? "text-slate-400" : ""}>
+                                                    {SUPPORT_UNIT_NAMES[card.supportUnit]}
+                                                </span>
+                                            </div>
+                                        }
+                                    />
+                                )}
                                 {card.gachaPhrase && card.gachaPhrase !== "-" && (
                                     <GachaPhraseRow
                                         phrase={card.gachaPhrase}

@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import BaseFilters, { FilterSection } from "@/components/common/BaseFilters";
-import { CardRarityType, CardAttribute, ATTR_NAMES, CHARACTER_NAMES, UNIT_DATA } from "@/types/types";
+import { CardRarityType, CardAttribute, ATTR_NAMES, CHARACTER_NAMES, UNIT_DATA, SupportUnit, SUPPORT_UNIT_NAMES } from "@/types/types";
 import { getCharacterIconUrl } from "@/lib/assets";
 import { useCardSupplyTypeMapping } from "@/hooks/useCardSupplyType";
 
@@ -22,6 +22,10 @@ interface CardFiltersProps {
     // Supply Type filter
     selectedSupplyTypes: string[];
     onSupplyTypeChange: (types: string[]) => void;
+
+    // Support Unit filter (for Virtual Singers)
+    selectedSupportUnits: SupportUnit[];
+    onSupportUnitChange: (units: SupportUnit[]) => void;
 
     // Search
     searchQuery: string;
@@ -81,6 +85,8 @@ export default function CardFilters({
     onRarityChange,
     selectedSupplyTypes,
     onSupplyTypeChange,
+    selectedSupportUnits,
+    onSupportUnitChange,
     searchQuery,
     onSearchChange,
     sortBy,
@@ -126,6 +132,17 @@ export default function CardFilters({
         }
     };
 
+    const toggleSupportUnit = (unit: SupportUnit) => {
+        if (selectedSupportUnits.includes(unit)) {
+            onSupportUnitChange(selectedSupportUnits.filter(u => u !== unit));
+        } else {
+            onSupportUnitChange([...selectedSupportUnits, unit]);
+        }
+    };
+
+    // Check if any virtual singer is selected (characterId >= 21)
+    const hasVirtualSingerSelected = selectedCharacters.some(id => id >= 21);
+
     const handleUnitClick = (unitId: string) => {
         const unit = UNIT_DATA.find(u => u.id === unitId);
         if (!unit) return;
@@ -146,6 +163,7 @@ export default function CardFilters({
         selectedAttrs.length > 0 ||
         selectedRarities.length > 0 ||
         selectedSupplyTypes.length > 0 ||
+        selectedSupportUnits.length > 0 ||
         searchQuery.length > 0;
 
     const currentUnits = selectedUnitIds.length > 0
@@ -231,6 +249,48 @@ export default function CardFilters({
                                 </div>
                             </button>
                         ))}
+                    </div>
+                </FilterSection>
+            )}
+
+            {/* Support Unit Filter - Only show when virtual singers are selected */}
+            {hasVirtualSingerSelected && (
+                <FilterSection label="团体归属">
+                    <div className="flex flex-wrap gap-2">
+                        {/* Ordered list: follows team order, then original (none) at end */}
+                        {(["light_sound", "idol", "street", "theme_park", "school_refusal", "none"] as SupportUnit[]).map((unit) => {
+                            const isSelected = selectedSupportUnits.includes(unit);
+                            const unitIconMap: Record<SupportUnit, string> = {
+                                "none": "vs.webp",
+                                "light_sound": "ln.webp",
+                                "idol": "mmj.webp",
+                                "school_refusal": "n25.webp",
+                                "theme_park": "wxs.webp",
+                                "street": "vbs.webp",
+                            };
+                            const iconName = unitIconMap[unit];
+                            return (
+                                <button
+                                    key={unit}
+                                    onClick={() => toggleSupportUnit(unit)}
+                                    className={`p-1.5 rounded-xl transition-all ${isSelected
+                                        ? "ring-2 ring-miku shadow-lg bg-white"
+                                        : "hover:bg-slate-100 border border-transparent bg-slate-50"
+                                        }`}
+                                    title={SUPPORT_UNIT_NAMES[unit]}
+                                >
+                                    <div className="w-8 h-8 relative">
+                                        <Image
+                                            src={`/data/icon/${iconName}`}
+                                            alt={SUPPORT_UNIT_NAMES[unit]}
+                                            fill
+                                            className="object-contain"
+                                            unoptimized
+                                        />
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
                 </FilterSection>
             )}

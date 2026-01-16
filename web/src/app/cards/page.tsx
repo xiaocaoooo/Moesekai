@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import MainLayout from "@/components/MainLayout";
 import CardGrid from "@/components/cards/CardGrid";
 import CardFilters from "@/components/cards/CardFilters";
-import { ICardInfo, CardRarityType, CardAttribute, getRarityNumber } from "@/types/types";
+import { ICardInfo, CardRarityType, CardAttribute, getRarityNumber, SupportUnit } from "@/types/types";
 import { useTheme } from "@/contexts/ThemeContext";
 
 // Master data URL (Japanese server)
@@ -33,6 +33,7 @@ function CardsContent() {
     const [selectedAttrs, setSelectedAttrs] = useState<CardAttribute[]>([]);
     const [selectedRarities, setSelectedRarities] = useState<CardRarityType[]>([]);
     const [selectedSupplyTypes, setSelectedSupplyTypes] = useState<string[]>([]);
+    const [selectedSupportUnits, setSelectedSupportUnits] = useState<SupportUnit[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     // Sort states
@@ -51,18 +52,20 @@ function CardsContent() {
         const attrs = searchParams.get("attrs");
         const rarities = searchParams.get("rarities");
         const supplyTypes = searchParams.get("supplyTypes");
+        const supportUnits = searchParams.get("supportUnits");
         const search = searchParams.get("search");
         const sort = searchParams.get("sortBy");
         const order = searchParams.get("sortOrder");
 
         // If URL has params, use them
-        const hasUrlParams = chars || attrs || rarities || supplyTypes || search || sort || order;
+        const hasUrlParams = chars || attrs || rarities || supplyTypes || supportUnits || search || sort || order;
 
         if (hasUrlParams) {
             if (chars) setSelectedCharacters(chars.split(",").map(Number));
             if (attrs) setSelectedAttrs(attrs.split(",") as CardAttribute[]);
             if (rarities) setSelectedRarities(rarities.split(",") as CardRarityType[]);
             if (supplyTypes) setSelectedSupplyTypes(supplyTypes.split(","));
+            if (supportUnits) setSelectedSupportUnits(supportUnits.split(",") as SupportUnit[]);
             if (search) setSearchQuery(search);
             if (sort) setSortBy(sort as "id" | "releaseAt" | "rarity");
             if (order) setSortOrder(order as "asc" | "desc");
@@ -76,6 +79,7 @@ function CardsContent() {
                     if (filters.attrs?.length) setSelectedAttrs(filters.attrs);
                     if (filters.rarities?.length) setSelectedRarities(filters.rarities);
                     if (filters.supplyTypes?.length) setSelectedSupplyTypes(filters.supplyTypes);
+                    if (filters.supportUnits?.length) setSelectedSupportUnits(filters.supportUnits);
                     if (filters.search) setSearchQuery(filters.search);
                     if (filters.sortBy) setSortBy(filters.sortBy);
                     if (filters.sortOrder) setSortOrder(filters.sortOrder);
@@ -97,6 +101,7 @@ function CardsContent() {
             attrs: selectedAttrs,
             rarities: selectedRarities,
             supplyTypes: selectedSupplyTypes,
+            supportUnits: selectedSupportUnits,
             search: searchQuery,
             sortBy,
             sortOrder,
@@ -113,6 +118,7 @@ function CardsContent() {
         if (selectedAttrs.length > 0) params.set("attrs", selectedAttrs.join(","));
         if (selectedRarities.length > 0) params.set("rarities", selectedRarities.join(","));
         if (selectedSupplyTypes.length > 0) params.set("supplyTypes", selectedSupplyTypes.join(","));
+        if (selectedSupportUnits.length > 0) params.set("supportUnits", selectedSupportUnits.join(","));
         if (searchQuery) params.set("search", searchQuery);
         if (sortBy !== "id") params.set("sortBy", sortBy);
         if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
@@ -120,7 +126,7 @@ function CardsContent() {
         const queryString = params.toString();
         const newUrl = queryString ? `/cards?${queryString}` : "/cards";
         router.replace(newUrl, { scroll: false });
-    }, [selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
+    }, [selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
 
     // Fetch cards data
     useEffect(() => {
@@ -197,6 +203,18 @@ function CardsContent() {
             result = result.filter(card => selectedSupplyTypes.includes(card.cardSupplyType));
         }
 
+        // Apply support unit filter (only for virtual singer cards, non-VS cards pass through)
+        if (selectedSupportUnits.length > 0) {
+            result = result.filter(card => {
+                // Non-virtual singer cards are not affected by supportUnit filter
+                if (card.characterId < 21) {
+                    return true;
+                }
+                // Virtual singer cards must match selected supportUnits
+                return selectedSupportUnits.includes(card.supportUnit);
+            });
+        }
+
         // Apply search query (supports both name and ID)
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase().trim();
@@ -235,7 +253,7 @@ function CardsContent() {
         });
 
         return result;
-    }, [cards, selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, searchQuery, sortBy, sortOrder, isShowSpoiler]);
+    }, [cards, selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, isShowSpoiler]);
 
     // Displayed cards (with pagination)
     const displayedCards = useMemo(() => {
@@ -253,6 +271,7 @@ function CardsContent() {
         setSelectedAttrs([]);
         setSelectedRarities([]);
         setSelectedSupplyTypes([]);
+        setSelectedSupportUnits([]);
         setSearchQuery("");
         setSortBy("id");
         setSortOrder("desc");
@@ -309,6 +328,8 @@ function CardsContent() {
                             onRarityChange={setSelectedRarities}
                             selectedSupplyTypes={selectedSupplyTypes}
                             onSupplyTypeChange={setSelectedSupplyTypes}
+                            selectedSupportUnits={selectedSupportUnits}
+                            onSupportUnitChange={setSelectedSupportUnits}
                             searchQuery={searchQuery}
                             onSearchChange={setSearchQuery}
                             sortBy={sortBy}
