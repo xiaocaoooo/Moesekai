@@ -91,6 +91,9 @@ function CardsContent() {
         setFiltersInitialized(true);
     }, []); // Only run once on mount
 
+    // Check for screenshot mode (derived state)
+    const isScreenshotMode = searchParams.get("mode") === "screenshot";
+
     // Save to sessionStorage and update URL when filters change
     useEffect(() => {
         if (!filtersInitialized) return;
@@ -120,13 +123,16 @@ function CardsContent() {
         if (selectedSupplyTypes.length > 0) params.set("supplyTypes", selectedSupplyTypes.join(","));
         if (selectedSupportUnits.length > 0) params.set("supportUnits", selectedSupportUnits.join(","));
         if (searchQuery) params.set("search", searchQuery);
+        // Preserve mode parameter (e.g. for screenshot mode)
+        if (isScreenshotMode) params.set("mode", "screenshot");
+
         if (sortBy !== "id") params.set("sortBy", sortBy);
         if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
 
         const queryString = params.toString();
         const newUrl = queryString ? `/cards?${queryString}` : "/cards";
         router.replace(newUrl, { scroll: false });
-    }, [selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
+    }, [selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, router, filtersInitialized, isScreenshotMode]);
 
     // Fetch cards data
     useEffect(() => {
@@ -255,10 +261,12 @@ function CardsContent() {
         return result;
     }, [cards, selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, isShowSpoiler]);
 
+
     // Displayed cards (with pagination)
     const displayedCards = useMemo(() => {
-        return filteredCards.slice(0, displayCount);
-    }, [filteredCards, displayCount]);
+        const limit = isScreenshotMode ? 100 : displayCount;
+        return filteredCards.slice(0, limit);
+    }, [filteredCards, displayCount, isScreenshotMode]);
 
     // Load more handler
     const loadMore = useCallback(() => {
@@ -346,8 +354,15 @@ function CardsContent() {
                 <div className="flex-1 min-w-0">
                     <CardGrid cards={displayedCards} isLoading={isLoading} />
 
+                    {/* Screenshot Mode Notice */}
+                    {isScreenshotMode && (
+                        <div className="mt-8 text-center text-slate-500 text-sm font-medium p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            该模式下默认仅显示前 100 张相关卡牌
+                        </div>
+                    )}
+
                     {/* Load More Button */}
-                    {!isLoading && displayedCards.length < filteredCards.length && (
+                    {!isScreenshotMode && !isLoading && displayedCards.length < filteredCards.length && (
                         <div className="mt-8 flex justify-center">
                             <button
                                 onClick={loadMore}
@@ -362,7 +377,7 @@ function CardsContent() {
                     )}
 
                     {/* All loaded indicator */}
-                    {!isLoading && displayedCards.length > 0 && displayedCards.length >= filteredCards.length && (
+                    {!isScreenshotMode && !isLoading && displayedCards.length > 0 && displayedCards.length >= filteredCards.length && (
                         <div className="mt-8 text-center text-slate-400 text-sm">
                             已显示全部 {filteredCards.length} 张卡牌
                         </div>
