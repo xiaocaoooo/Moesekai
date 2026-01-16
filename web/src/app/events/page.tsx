@@ -124,10 +124,13 @@ function EventsContent() {
             result = result.filter(event => selectedTypes.includes(event.eventType as EventType));
         }
 
-        // Apply search query
+        // Apply search query (supports both name and ID)
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase().trim();
+            const queryAsNumber = parseInt(query, 10);
+
             result = result.filter(event =>
+                event.id === queryAsNumber ||
                 event.name.toLowerCase().includes(query)
             );
         }

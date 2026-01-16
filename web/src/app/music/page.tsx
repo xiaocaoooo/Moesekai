@@ -172,11 +172,15 @@ function MusicContent() {
             result = result.filter((m) => eventMusicIds.has(m.id));
         }
 
-        // Apply search query
+        // Apply search query (supports both name and ID)
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase().trim();
+            const queryAsNumber = parseInt(query, 10);
+            const isNumericQuery = !isNaN(queryAsNumber);
+
             result = result.filter(
                 (m) =>
+                    m.id === queryAsNumber ||
                     m.title.toLowerCase().includes(query) ||
                     m.composer.toLowerCase().includes(query) ||
                     m.lyricist.toLowerCase().includes(query) ||

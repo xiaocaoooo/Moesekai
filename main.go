@@ -394,8 +394,11 @@ func main() {
 			filtered = make([]Gacha, len(gachaList))
 			copy(filtered, gachaList)
 		} else {
+			// Check if search query is a valid ID
+			searchId, searchIdErr := strconv.Atoi(search)
 			for _, g := range gachaList {
-				if strings.Contains(strings.ToLower(g.Name), search) {
+				// Match by ID or by name
+				if (searchIdErr == nil && g.ID == searchId) || strings.Contains(strings.ToLower(g.Name), search) {
 					filtered = append(filtered, g)
 				}
 			}

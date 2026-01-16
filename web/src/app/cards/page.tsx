@@ -197,10 +197,13 @@ function CardsContent() {
             result = result.filter(card => selectedSupplyTypes.includes(card.cardSupplyType));
         }
 
-        // Apply search query
+        // Apply search query (supports both name and ID)
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase().trim();
+            const queryAsNumber = parseInt(query, 10);
+
             result = result.filter(card =>
+                card.id === queryAsNumber ||
                 card.prefix.toLowerCase().includes(query) ||
                 card.cardSkillName.toLowerCase().includes(query)
             );

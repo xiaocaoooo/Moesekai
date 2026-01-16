@@ -124,10 +124,13 @@ function VirtualLiveContent() {
             result = result.filter(vl => selectedTypes.includes(vl.virtualLiveType as VirtualLiveType));
         }
 
-        // Apply search query
+        // Apply search query (supports both name and ID)
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase().trim();
+            const queryAsNumber = parseInt(query, 10);
+
             result = result.filter(vl =>
+                vl.id === queryAsNumber ||
                 vl.name.toLowerCase().includes(query)
             );
         }
