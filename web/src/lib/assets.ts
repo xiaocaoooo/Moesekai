@@ -113,21 +113,6 @@ export function getStampUrl(assetbundleName: string, source: AssetSourceType = "
 // Chart SVG available on Uni and SnowyAssets
 export function getChartSvgUrl(musicId: number, difficulty: string, source: AssetSourceType = "uni"): string {
     if (source === "snowyassets") {
-        // Assuming SnowyAssets mirrors the structure or has it available
-        // Note: The user request didn't explicitly specify charts, but "uni's and haruki's can be used"
-        // implies full coverage. Let's check if there's a specific path for charts on snowyassets later if needed.
-        // For now, let's assume it might be proxied or we fallback/use specific common path if known.
-        // Actually, Uni charts are on charts-new.unipjsk.com, not the main asset server.
-        // If snowyassets allows everything, maybe it proxies charts too?
-        // Given the request "can uni's haruki's all be used", I'll add the option.
-        // But for charts, Uni uses a different domain. Let's keep Uni as fallback but add snowy support if possible.
-        // Since I don't know the exact snowy chart URL, I'll stick to Uni for charts unless I'm sure.
-        // Wait, the user said "can uni's haruki's all be used" -> "Uni's and Haruki's [assets] can all be used".
-        // It implies SnowyAssets is a superset or proxy.
-        // For safely, let's assume standard asset structure.
-        // But charts are special in Uni.
-        // Let's modify getting chart url to accept source for API signature consistency, but maybe keep uni for now if unsure.
-        // Actually, let's try to use snowyassets if selected.
         return `https://charts-new.unipjsk.com/moe/svg/${musicId}/${difficulty}.svg`;
     }
     return `https://charts-new.unipjsk.com/moe/svg/${musicId}/${difficulty}.svg`;
@@ -152,3 +137,24 @@ export function getVirtualLiveBannerUrl(assetbundleName: string, source: AssetSo
     }
     return `${ASSET_BASE_URL_HARUKI}/ondemand/virtual_live/select/banner/${assetbundleName}/${assetbundleName}.png`;
 }
+
+// ==================== MySEKAI Asset URLs ====================
+
+// MySEKAI Fixture Thumbnail available on Haruki and SnowyAssets
+export function getMysekaiFixtureThumbnailUrl(assetbundleName: string, source: AssetSourceType = "uni"): string {
+    if (source === "snowyassets") {
+        return `${ASSET_BASE_URL_SNOWY}/ondemand/mysekai/thumbnail/fixture/${assetbundleName}_1.png`;
+    }
+    // Default to Haruki for MySEKAI as Uni doesn't have these
+    return `${ASSET_BASE_URL_HARUKI}/ondemand/mysekai/thumbnail/fixture/${assetbundleName}_1.png`;
+}
+
+// MySEKAI Material Thumbnail available on Haruki and SnowyAssets
+export function getMysekaiMaterialThumbnailUrl(iconAssetbundleName: string, source: AssetSourceType = "uni"): string {
+    if (source === "snowyassets") {
+        return `${ASSET_BASE_URL_SNOWY}/ondemand/mysekai/thumbnail/material/${iconAssetbundleName}.png`;
+    }
+    // Default to Haruki for MySEKAI as Uni doesn't have these
+    return `${ASSET_BASE_URL_HARUKI}/ondemand/mysekai/thumbnail/material/${iconAssetbundleName}.png`;
+}
+

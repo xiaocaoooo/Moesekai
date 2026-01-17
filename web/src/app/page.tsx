@@ -96,6 +96,14 @@ export default function Home() {
                 <p className="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Virtual Live</p>
               </div>
             </Link>
+
+            {/* Card 8: MySEKAI */}
+            <Link href="/mysekai" className="group">
+              <div className="p-4 rounded-2xl glass-card hover:bg-white/60 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl border border-white/40 flex flex-col items-center gap-2 text-center h-full justify-center">
+                <h3 className="text-lg font-bold text-primary-text group-hover:text-miku transition-colors">家具</h3>
+                <p className="text-[10px] text-slate-400 font-bold tracking-wider uppercase">MySEKAI</p>
+              </div>
+            </Link>
           </div>
         </div>
 
