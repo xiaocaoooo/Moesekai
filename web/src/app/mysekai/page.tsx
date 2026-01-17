@@ -592,7 +592,7 @@ function MysekaiContent() {
                                     >
                                         <div className="relative aspect-square mb-2 bg-slate-50 rounded-lg overflow-hidden group-hover:bg-slate-100 transition-colors">
                                             <Image
-                                                src={getMysekaiFixtureThumbnailUrl(fixture.assetbundleName, assetSource)}
+                                                src={getMysekaiFixtureThumbnailUrl(fixture.assetbundleName, assetSource, fixture.mysekaiFixtureMainGenreId)}
                                                 alt={fixture.name}
                                                 fill
                                                 className="object-contain p-2"

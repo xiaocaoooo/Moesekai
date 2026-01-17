@@ -275,7 +275,7 @@ export default function MysekaiFixtureDetailClient() {
         );
     }
 
-    const thumbnailUrl = getMysekaiFixtureThumbnailUrl(fixture.assetbundleName, assetSource);
+    const thumbnailUrl = getMysekaiFixtureThumbnailUrl(fixture.assetbundleName, assetSource, fixture.mysekaiFixtureMainGenreId);
     const gridSize = fixture.gridSize;
 
     return (

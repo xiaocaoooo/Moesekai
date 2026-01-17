@@ -141,12 +141,22 @@ export function getVirtualLiveBannerUrl(assetbundleName: string, source: AssetSo
 // ==================== MySEKAI Asset URLs ====================
 
 // MySEKAI Fixture Thumbnail available on Haruki and SnowyAssets
-export function getMysekaiFixtureThumbnailUrl(assetbundleName: string, source: AssetSourceType = "uni"): string {
-    if (source === "snowyassets") {
-        return `${ASSET_BASE_URL_SNOWY}/ondemand/mysekai/thumbnail/fixture/${assetbundleName}_1.png`;
+// MySEKAI Fixture Thumbnail available on Haruki and SnowyAssets
+export function getMysekaiFixtureThumbnailUrl(assetbundleName: string, source: AssetSourceType = "uni", genreId: number = 0): string {
+    const baseUrl = source === "snowyassets" ? ASSET_BASE_URL_SNOWY : ASSET_BASE_URL_HARUKI;
+
+    // Wall (Genre ID 7)
+    if (genreId === 7) {
+        return `${baseUrl}/ondemand/mysekai/thumbnail/surface_appearance/${assetbundleName}/tex_${assetbundleName}_wall_appearance_1.png`;
     }
-    // Default to Haruki for MySEKAI as Uni doesn't have these
-    return `${ASSET_BASE_URL_HARUKI}/ondemand/mysekai/thumbnail/fixture/${assetbundleName}_1.png`;
+
+    // Floor (Genre ID 8)
+    if (genreId === 8) {
+        return `${baseUrl}/ondemand/mysekai/thumbnail/surface_appearance/${assetbundleName}/tex_${assetbundleName}_floor_appearance_1.png`;
+    }
+
+    // Default
+    return `${baseUrl}/ondemand/mysekai/thumbnail/fixture/${assetbundleName}_1.png`;
 }
 
 // MySEKAI Material Thumbnail available on Haruki and SnowyAssets
