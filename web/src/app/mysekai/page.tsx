@@ -200,6 +200,8 @@ function getTranslatedTagName(name: string): string {
 }
 
 function MysekaiContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const { assetSource } = useTheme();
 
     const [fixtures, setFixtures] = useState<IMysekaiFixtureInfo[]>([]);
@@ -209,6 +211,7 @@ function MysekaiContent() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // Filter states
     const [searchQuery, setSearchQuery] = useState("");
@@ -224,6 +227,86 @@ function MysekaiContent() {
 
     // Pagination
     const [displayCount, setDisplayCount] = useState(48);
+
+    // Storage key
+    const STORAGE_KEY = "mysekai_filters";
+
+    // Initialize from URL params first, then fallback to sessionStorage
+    useEffect(() => {
+        const genre = searchParams.get("genre");
+        const subGenre = searchParams.get("subGenre");
+        const tag = searchParams.get("tag");
+        const chars = searchParams.get("characters");
+        const search = searchParams.get("search");
+        const sort = searchParams.get("sortBy");
+        const order = searchParams.get("sortOrder");
+
+        // If URL has params, use them
+        const hasUrlParams = genre || subGenre || tag || chars || search || sort || order;
+
+        if (hasUrlParams) {
+            if (genre) setSelectedGenre(Number(genre));
+            if (subGenre) setSelectedSubGenre(Number(subGenre));
+            if (tag) setSelectedTag(Number(tag));
+            if (chars) setSelectedCharacters(chars.split(",").map(Number));
+            if (search) setSearchQuery(search);
+            if (sort) setSortBy(sort);
+            if (order) setSortOrder(order as "asc" | "desc");
+        } else {
+            // Fallback to sessionStorage
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const filters = JSON.parse(saved);
+                    if (filters.genre !== undefined && filters.genre !== null) setSelectedGenre(filters.genre);
+                    if (filters.subGenre !== undefined && filters.subGenre !== null) setSelectedSubGenre(filters.subGenre);
+                    if (filters.tag !== undefined && filters.tag !== null) setSelectedTag(filters.tag);
+                    if (filters.characters?.length) setSelectedCharacters(filters.characters);
+                    if (filters.search) setSearchQuery(filters.search);
+                    if (filters.sortBy) setSortBy(filters.sortBy);
+                    if (filters.sortOrder) setSortOrder(filters.sortOrder);
+                }
+            } catch (e) {
+                console.log("Could not restore filters from sessionStorage");
+            }
+        }
+        setFiltersInitialized(true);
+    }, []); // Only run once on mount
+
+    // Save to sessionStorage and update URL when filters change
+    useEffect(() => {
+        if (!filtersInitialized) return;
+
+        // Save to sessionStorage
+        const filters = {
+            genre: selectedGenre,
+            subGenre: selectedSubGenre,
+            tag: selectedTag,
+            characters: selectedCharacters,
+            search: searchQuery,
+            sortBy,
+            sortOrder,
+        };
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+        } catch (e) {
+            console.log("Could not save filters to sessionStorage");
+        }
+
+        // Update URL
+        const params = new URLSearchParams();
+        if (selectedGenre !== null) params.set("genre", String(selectedGenre));
+        if (selectedSubGenre !== null) params.set("subGenre", String(selectedSubGenre));
+        if (selectedTag !== null) params.set("tag", String(selectedTag));
+        if (selectedCharacters.length > 0) params.set("characters", selectedCharacters.join(","));
+        if (searchQuery) params.set("search", searchQuery);
+        if (sortBy !== "id") params.set("sortBy", sortBy);
+        if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
+
+        const queryString = params.toString();
+        const newUrl = queryString ? `/mysekai?${queryString}` : "/mysekai";
+        router.replace(newUrl, { scroll: false });
+    }, [selectedGenre, selectedSubGenre, selectedTag, selectedCharacters, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
 
     // Fetch data
     useEffect(() => {
