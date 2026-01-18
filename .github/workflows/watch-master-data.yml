@@ -21,13 +21,13 @@ jobs:
           mkdir -p data/master
           
           # Download files from sekaimaster
-          curl -s "https://sekaimaster.exmeaning.com/master/events.json" -o data/master/events.json
-          curl -s "https://sekaimaster.exmeaning.com/master/eventCards.json" -o data/master/eventCards.json
-          curl -s "https://sekaimaster.exmeaning.com/master/eventMusics.json" -o data/master/eventMusics.json
+          curl -sS --fail --retry 5 --retry-delay 5 --http1.1 "https://sekaimaster.exmeaning.com/master/events.json" -o data/master/events.json
+          curl -sS --fail --retry 5 --retry-delay 5 --http1.1 "https://sekaimaster.exmeaning.com/master/eventCards.json" -o data/master/eventCards.json
+          curl -sS --fail --retry 5 --retry-delay 5 --http1.1 "https://sekaimaster.exmeaning.com/master/eventMusics.json" -o data/master/eventMusics.json
           
           # Download files from haruki-sekai-master (GitHub Raw)
-          curl -s "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master/virtualLives.json" -o data/master/virtualLives.json
-          curl -s "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master/gachas.json" -o data/master/gachas.json
+          curl -sS --fail --retry 5 --retry-delay 5 --http1.1 "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master/virtualLives.json" -o data/master/virtualLives.json
+          curl -sS --fail --retry 5 --retry-delay 5 --http1.1 "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master/gachas.json" -o data/master/gachas.json
           
           # Check for changes
           if [[ -n $(git status --porcelain data/master) ]]; then
