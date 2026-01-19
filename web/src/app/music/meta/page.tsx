@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import MainLayout from "@/components/MainLayout";
@@ -130,12 +131,15 @@ function useEnableStickyColumns() {
 }
 
 function MusicMetaContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const { assetSource } = useTheme();
     const [musicMetas, setMusicMetas] = useState<IMusicMeta[]>([]);
     const [musics, setMusics] = useState<IMusicInfo[]>([]);
     const [difficulties, setDifficulties] = useState<IMusicDifficultyInfo[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // View mode state
     const [viewMode, setViewMode] = useState<ViewMode>("overview");
@@ -169,6 +173,91 @@ function MusicMetaContent() {
     const expandedRowCount = columnCount >= 5 ? 3 : 5;
     const defaultItemCount = columnCount * defaultRowCount;
     const expandedItemCount = columnCount * expandedRowCount;
+
+    // Storage key for sessionStorage
+    const STORAGE_KEY = "music_meta_filters";
+
+    // Initialize from URL params first, then fallback to sessionStorage
+    useEffect(() => {
+        const view = searchParams.get("view");
+        const mode = searchParams.get("mode");
+        const expanded = searchParams.get("expanded");
+        const sort = searchParams.get("sortField");
+        const order = searchParams.get("sortOrder");
+        const search = searchParams.get("search");
+        const page = searchParams.get("page");
+        const size = searchParams.get("pageSize");
+
+        // If URL has params, use them
+        const hasUrlParams = view || mode || expanded || sort || order || search || page || size;
+
+        if (hasUrlParams) {
+            if (view && (view === "overview" || view === "detailed")) setViewMode(view);
+            if (mode && (mode === "multi" || mode === "solo" || mode === "auto")) setLiveMode(mode);
+            if (expanded) setExpandedRankings(new Set(expanded.split(",")));
+            if (sort) setSortField(sort as keyof IMusicMeta);
+            if (order && (order === "asc" || order === "desc")) setSortOrder(order);
+            if (search) setSearchQuery(search);
+            if (page) setCurrentPage(Number(page) || 1);
+            if (size && PAGE_SIZE_OPTIONS.includes(Number(size))) setPageSize(Number(size));
+        } else {
+            // Fallback to sessionStorage
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const filters = JSON.parse(saved);
+                    if (filters.viewMode) setViewMode(filters.viewMode);
+                    if (filters.liveMode) setLiveMode(filters.liveMode);
+                    if (filters.expandedRankings?.length) setExpandedRankings(new Set(filters.expandedRankings));
+                    if (filters.sortField) setSortField(filters.sortField);
+                    if (filters.sortOrder) setSortOrder(filters.sortOrder);
+                    if (filters.searchQuery) setSearchQuery(filters.searchQuery);
+                    if (filters.currentPage) setCurrentPage(filters.currentPage);
+                    if (filters.pageSize) setPageSize(filters.pageSize);
+                }
+            } catch (e) {
+                console.log("Could not restore filters from sessionStorage");
+            }
+        }
+        setFiltersInitialized(true);
+    }, []); // Only run once on mount
+
+    // Save to sessionStorage and update URL when filters change
+    useEffect(() => {
+        if (!filtersInitialized) return;
+
+        // Save to sessionStorage
+        const filters = {
+            viewMode,
+            liveMode,
+            expandedRankings: Array.from(expandedRankings),
+            sortField,
+            sortOrder,
+            searchQuery,
+            currentPage,
+            pageSize,
+        };
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+        } catch (e) {
+            console.log("Could not save filters to sessionStorage");
+        }
+
+        // Update URL
+        const params = new URLSearchParams();
+        if (viewMode !== "overview") params.set("view", viewMode);
+        if (liveMode !== "multi") params.set("mode", liveMode);
+        if (expandedRankings.size > 0) params.set("expanded", Array.from(expandedRankings).join(","));
+        if (sortField !== "music_id") params.set("sortField", sortField);
+        if (sortOrder !== "asc") params.set("sortOrder", sortOrder);
+        if (searchQuery) params.set("search", searchQuery);
+        if (currentPage !== 1) params.set("page", String(currentPage));
+        if (pageSize !== 50) params.set("pageSize", String(pageSize));
+
+        const queryString = params.toString();
+        const newUrl = queryString ? `/music/meta?${queryString}` : "/music/meta";
+        router.replace(newUrl, { scroll: false });
+    }, [viewMode, liveMode, expandedRankings, sortField, sortOrder, searchQuery, currentPage, pageSize, router, filtersInitialized]);
 
     // Fetch data
     useEffect(() => {
