@@ -237,7 +237,8 @@ def translate_batch(api_key: str, texts: List[str], llm_type: str, dry_run: bool
     for i, original in enumerate(texts):
         if i < len(translations):
             translated = translations[i]
-            if translated and translated != original:
+            # Even if translation is same as original, we save it to prevent re-translation
+            if translated:
                 result[original] = translated
         else:
             print(f"  Warning: Missing translation for: {original[:50]}...")
@@ -263,7 +264,7 @@ def normalize_translation_data(data: Dict[str, Any]) -> Dict[str, Dict[str, Dict
                 # Already in new format
                 result[field][jp_text] = value
             else:
-                # Old flat format, assume it's from LLM
+                # Old flat format, assume it's from LLM (or unknown)
                 result[field][jp_text] = {"text": str(value), "source": "unknown"}
     return result
 
@@ -549,6 +550,17 @@ def extract_mysekai_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List
 
 def load_existing_translations(category: str) -> Dict[str, Dict[str, Dict[str, str]]]:
     """Load existing translations from file (with source tracking)"""
+    # Try loading full data first (preserves source info)
+    filepath_full = OUTPUT_DIR / f"{category}.full.json"
+    if filepath_full.exists():
+        try:
+            with open(filepath_full, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return normalize_translation_data(data)
+        except (json.JSONDecodeError, IOError):
+            pass
+            
+    # Fallback to flat file
     filepath = OUTPUT_DIR / f"{category}.json"
     if filepath.exists():
         try:

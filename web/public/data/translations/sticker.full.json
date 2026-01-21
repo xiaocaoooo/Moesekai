@@ -4178,243 +4178,275 @@
     },
     "[スタンプ]一歌：HAPPY BIRTHDAY": {
       "text": "一歌：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]咲希：HAPPY BIRTHDAY": {
       "text": "咲希：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]杏：HAPPY BIRTHDAY": {
       "text": "杏：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]冬弥：HAPPY BIRTHDAY": {
       "text": "冬弥：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]司：HAPPY BIRTHDAY": {
       "text": "司：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]えむ：HAPPY BIRTHDAY": {
       "text": "笑梦：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]寧々：HAPPY BIRTHDAY": {
       "text": "宁宁：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]類：HAPPY BIRTHDAY": {
       "text": "类：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]瑞希：HAPPY BIRTHDAY": {
       "text": "瑞希：生日快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]ミク：HAPPY ANNIVERSARY": {
       "text": "未来：周年快乐",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]まふゆ：信じたい…": {
       "text": "真冬：想要去相信……",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]愛莉：ハートを胸に！": {
       "text": "爱莉：心怀热忱！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]こはね：あの熱さを私達で…！": {
       "text": "心羽：那份热度，由我们来……！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]類：限界を超えよう": {
       "text": "类：超越极限吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]穂波：わたし、今…": {
       "text": "穗波：我，现在……",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]みのり：ファンになりました！": {
       "text": "实乃里：我成为你的粉丝了！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]杏：聴かせてよ！": {
       "text": "杏：让我听听看吧！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]瑞希：めちゃくちゃ照れる…": {
       "text": "瑞希：好害羞啊……",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]司：ライバルとして！": {
       "text": "司：作为对手！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]杏：歌いまくるぞ～！": {
       "text": "杏：要尽情歌唱咯～！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]一歌：夢みたいだな…": {
       "text": "一歌：简直像做梦一样……",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]雫：こっちに来て！": {
       "text": "雫：快到这边来！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]一歌：いってきます！": {
       "text": "一歌：我出发了！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]咲希：大丈夫だよ！": {
       "text": "咲希：没关系的！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]穂波：強くなろう": {
       "text": "穗波：变得更强吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]志歩：みんなと行くんだ": {
       "text": "志步：要和大家一起去",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]みのり：一緒に深呼吸です！": {
       "text": "实乃里：一起来深呼吸吧！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]遥：休憩しちゃうんだ？": {
       "text": "遥：要休息了吗？",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]愛莉：頑張りなさい": {
       "text": "爱莉：给我好好加油",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]雫：最高のステージにしよう": {
       "text": "雫：打造最棒的舞台吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]こはね：みんな行こう、一緒に": {
       "text": "心羽：大家一起出发吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]杏：新しい伝説を始めるよ": {
       "text": "杏：开启新的传说吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]彰人：燃え尽きるまで！": {
       "text": "彰人：直到燃尽为止！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]冬弥：俺達の夢を、叶えよう": {
       "text": "冬弥：实现我们的梦想吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]司：信じるだけだ": {
       "text": "司：只要相信就好",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]えむ：あたしも協力するよ☆": {
       "text": "笑梦：我也会帮忙的哦☆",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]寧々：よかったね": {
       "text": "宁宁：太好了呢",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]類：演出家パワ～をお届けだ": {
       "text": "类：为你送上导演之力～",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]奏：おかえり": {
       "text": "奏：你回来啦",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]まふゆ：大事だから": {
       "text": "真冬：因为很重要",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]絵名：大切な友達なの！！": {
       "text": "[印章]绘名：是很重要的朋友！！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]瑞希：ただいま！": {
       "text": "[印章]暁山瑞希：我回来了！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]ミク：輝いてるね": {
       "text": "[印章]初音未来：闪闪发光呢",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]リン：すごいなあ…": {
       "text": "[印章]镜音铃：好厉害啊……",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]レン：音楽の力ってすごいな": {
       "text": "[印章]镜音连：音乐的力量真伟大啊",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]ルカ：ガツンとぶつけちゃえ！": {
       "text": "[印章]巡音流歌：全力出击吧！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]MEIKO：最高のアイドルよ！": {
       "text": "[印章]MEIKO：是最棒的偶像哦！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]KAITO：想いを殺そうとしたな": {
       "text": "[印章]KAITO：你想要扼杀心愿吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]絵名：…楽しい": {
       "text": "[印章]绘名：……好开心",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]寧々：応えなきゃ！": {
       "text": "[印章]草薙宁宁：必须回应才行！",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]彰人：ここからが勝負だ": {
       "text": "[印章]东云彰人：胜负从现在才开始",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]咲希：全力フルパワー♪": {
       "text": "[印章]天马咲希：全力全开",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]穂波とこはね：穂波ちゃん、頼りになるな": {
       "text": "[表情贴纸]穗波与心羽：穗波酱，真可靠呢",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]穂波と寧々：また一緒にやりたいな": {
       "text": "[表情贴纸]穗波与宁宁：还想再一起合作呢",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]穂波と瑞希：ただのおせっかいですけど": {
       "text": "[表情贴纸]穗波与瑞希：虽然只是我多管闲事",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]愛莉と類：演出は僕にお任せを": {
       "text": "[表情贴纸]爱莉与类：演出就交给我吧",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]雫と類：協力してもらえますか？": {
       "text": "[表情贴纸]雫与类：能请你协助我吗？",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]冬弥と奏：ぜひまた話しましょう": {
       "text": "[表情贴纸]冬弥与奏：请务必再一起聊聊",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]司とMEIKO：もしかして私、お手柄？": {
       "text": "[表情贴纸]司与MEIKO：难道说，我立功了？",
-      "source": "llm"
+      "source": "unknown"
     },
     "[スタンプ]絵名とKAITO：ちょっとは協力してよ": {
       "text": "[表情贴纸]绘名与KAITO：好歹也配合我一下啊",
-      "source": "llm"
+      "source": "unknown"
+    },
+    "[スタンプ]まふゆ：ゲームクリアだね": {
+      "text": "[スタンプ]真冬：游戏通关了呢",
+      "source": "unknown"
+    },
+    "[スタンプ]遥：できるよ！": {
+      "text": "[スタンプ]遥：办得到的！",
+      "source": "unknown"
+    },
+    "[スタンプ]みのり：笑顔になれるように": {
+      "text": "[スタンプ]实乃里：为了能露出笑容",
+      "source": "unknown"
+    },
+    "[スタンプ]奏：なんだろう…": {
+      "text": "[スタンプ]奏：是什么呢……",
+      "source": "unknown"
+    },
+    "[スタンプ]冬弥：俺達が勝たせてもらう": {
+      "text": "[スタンプ]冬弥：胜利就由我们拿下了",
+      "source": "unknown"
+    },
+    "[スタンプ]咲希とこはね：私達の夢、叶ったね": {
+      "text": "[スタンプ]咲希和心羽：我们的梦想，实现了呢",
+      "source": "unknown"
+    },
+    "[スタンプ]咲希と奏：天馬さん、今日も元気だね": {
+      "text": "[スタンプ]咲希和奏：天马同学，今天也很有精神呢",
+      "source": "unknown"
+    },
+    "[スタンプ]咲希とMEIKO：最高の曲、期待してるよ": {
+      "text": "[スタンプ]咲希和MEIKO：期待着最棒的曲子哦",
+      "source": "unknown"
     }
   }
 }
