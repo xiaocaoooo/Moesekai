@@ -105,22 +105,21 @@ export default function CardItem({ card, isSpoiler }: CardItemProps) {
 
                 {/* Card Info - Persistent Footer */}
                 <div className="px-2 py-1.5 bg-white border-t border-slate-100">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <div className="flex-1 truncate">
-                            <TranslatedText
-                                original={card.prefix}
-                                category="cards"
-                                field="prefix"
-                                originalClassName="text-slate-800 text-[10px] font-bold truncate leading-tight group-hover:text-miku transition-colors block"
-                                translationClassName="text-slate-400 text-[9px] truncate leading-tight block"
-                            />
-                        </div>
-                        {/* ID Bubble */}
+                    <div className="mb-0.5">
+                        <TranslatedText
+                            original={card.prefix}
+                            category="cards"
+                            field="prefix"
+                            originalClassName="text-slate-800 text-[10px] font-bold truncate leading-tight group-hover:text-miku transition-colors block"
+                            translationClassName="text-slate-400 text-[9px] truncate leading-tight block"
+                        />
+                    </div>
+                    <div className="flex items-center justify-between gap-1">
+                        <p className="text-slate-400 text-[9px] truncate leading-tight flex-1">{characterName}</p>
                         <span className="flex-shrink-0 text-[8px] text-slate-400 bg-slate-100 px-1 py-0.5 rounded leading-none font-mono">
                             ID:{card.id}
                         </span>
                     </div>
-                    <p className="text-slate-400 text-[9px] truncate leading-tight">{characterName}</p>
                 </div>
             </div>
         </Link>

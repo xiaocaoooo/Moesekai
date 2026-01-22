@@ -291,8 +291,8 @@ def extract_cards_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[s
     jp_data = fetch_masterdata("cards.json", "jp")
     cn_data = fetch_masterdata("cards.json", "cn")
     
-    cn_translations = {"prefix": {}, "skillName": {}}
-    jp_only = {"prefix": [], "skillName": []}
+    cn_translations = {"prefix": {}, "skillName": {}, "gachaPhrase": {}}
+    jp_only = {"prefix": [], "skillName": [], "gachaPhrase": []}
     
     if not jp_data:
         return cn_translations, jp_only
@@ -316,6 +316,13 @@ def extract_cards_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[s
                 cn_translations["skillName"][jp_skill] = cn_card["cardSkillName"]
             else:
                 jp_only["skillName"].append(jp_skill)
+
+        jp_phrase = card.get("gachaPhrase", "")
+        if jp_phrase and jp_phrase != "-":
+            if cn_card and cn_card.get("gachaPhrase") and cn_card["gachaPhrase"] != jp_phrase:
+                cn_translations["gachaPhrase"][jp_phrase] = cn_card["gachaPhrase"]
+            else:
+                jp_only["gachaPhrase"].append(jp_phrase)
     
     return cn_translations, jp_only
 
@@ -429,9 +436,10 @@ def extract_sticker_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List
 
 
 def extract_comic_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[str]]]:
-    """Extract comic translations from CN server"""
-    jp_data = fetch_masterdata("comics.json", "jp")
-    cn_data = fetch_masterdata("comics.json", "cn")
+    """Extract comic translations from CN server (using tips.json)"""
+    # Note: Snowy Viewer uses tips.json with assetbundleName for comics
+    jp_data = fetch_masterdata("tips.json", "jp")
+    cn_data = fetch_masterdata("tips.json", "cn")
     
     cn_translations = {"title": {}}
     jp_only = {"title": []}
@@ -439,9 +447,12 @@ def extract_comic_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[s
     if not jp_data:
         return cn_translations, jp_only
     
+    # Filter for comics (tips that have assetbundleName)
+    jp_comics = [c for c in jp_data if c.get("assetbundleName")]
+    
     cn_by_id = {c["id"]: c for c in (cn_data or [])}
     
-    for comic in jp_data:
+    for comic in jp_comics:
         comic_id = comic["id"]
         cn_comic = cn_by_id.get(comic_id)
         

@@ -7,6 +7,7 @@ import BaseFilters from "@/components/common/BaseFilters";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getComicUrl } from "@/lib/assets";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 interface ITipInfo {
     id: number;
@@ -177,7 +178,15 @@ function ComicContent() {
                                                 />
                                             </div>
                                             <div className="p-3">
-                                                <p className="text-sm font-bold text-slate-700 truncate">{comic.title}</p>
+                                                <div className="text-sm font-bold text-slate-700">
+                                                    <TranslatedText
+                                                        original={comic.title}
+                                                        category="comic"
+                                                        field="title"
+                                                        originalClassName="truncate block"
+                                                        translationClassName="text-xs font-medium text-slate-400 truncate block"
+                                                    />
+                                                </div>
                                                 <p className="text-[10px] text-slate-400 mt-1">#{comic.id}</p>
                                             </div>
                                         </div>

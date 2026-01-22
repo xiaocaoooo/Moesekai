@@ -8,6 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { CHARACTER_NAMES } from "@/types/types";
 import { getStampUrl } from "@/lib/assets";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 interface IStampInfo {
     id: number;
@@ -316,9 +317,15 @@ function StickerContent() {
                                                     unoptimized
                                                 />
                                             </div>
-                                            <p className="mt-1 text-[10px] text-slate-500 text-center truncate">
-                                                {stamp.name.replace(/\[.*\]/, "").replace(/^.*：/, "")}
-                                            </p>
+                                            <div className="mt-1 text-[10px] text-slate-500 text-center">
+                                                <TranslatedText
+                                                    original={stamp.name}
+                                                    category="sticker"
+                                                    field="name"
+                                                    originalClassName="truncate block"
+                                                    translationClassName="text-[9px] text-slate-400 truncate block"
+                                                />
+                                            </div>
                                         </div>
                                     </a>
                                 ))}

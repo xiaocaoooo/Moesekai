@@ -15,6 +15,7 @@ import {
 import { getVirtualLiveBannerUrl, getMusicJacketUrl, getEventLogoUrl, getEventBannerUrl } from "@/lib/assets";
 import { useTheme } from "@/contexts/ThemeContext";
 import { fetchMasterData, fetchWithCompression } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 interface IMusic {
     id: number;
@@ -203,7 +204,13 @@ export default function VirtualLiveDetailClient() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {virtualLive.name}
+                            <TranslatedText
+                                original={virtualLive.name}
+                                category="virtualLive"
+                                field="name"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -228,7 +235,13 @@ export default function VirtualLiveDetailClient() {
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-                        {virtualLive.name}
+                        <TranslatedText
+                            original={virtualLive.name}
+                            category="virtualLive"
+                            field="name"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                 </div>
 
@@ -267,7 +280,18 @@ export default function VirtualLiveDetailClient() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="ID" value={`#${virtualLive.id}`} />
-                                <InfoRow label="名称" value={virtualLive.name} />
+                                <InfoRow
+                                    label="名称"
+                                    value={
+                                        <TranslatedText
+                                            original={virtualLive.name}
+                                            category="virtualLive"
+                                            field="name"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="类型" value={VIRTUAL_LIVE_TYPE_NAMES[virtualLive.virtualLiveType as VirtualLiveType] || virtualLive.virtualLiveType} />
                                 <InfoRow label="平台" value={virtualLive.virtualLivePlatform} />
                                 <InfoRow label="开始时间" value={formatDate(virtualLive.startAt)} />
@@ -316,7 +340,13 @@ export default function VirtualLiveDetailClient() {
                                                     </span>
                                                 </div>
                                                 <h3 className="text-white font-bold text-lg leading-tight truncate">
-                                                    {relatedEvent.name}
+                                                    <TranslatedText
+                                                        original={relatedEvent.name}
+                                                        category="events"
+                                                        field="name"
+                                                        originalClassName="truncate block"
+                                                        translationClassName="text-sm font-medium text-white/90 truncate block mt-0.5"
+                                                    />
                                                 </h3>
                                             </div>
                                         </div>
@@ -361,7 +391,13 @@ export default function VirtualLiveDetailClient() {
                                                             </div>
                                                             <div>
                                                                 <p className="font-bold text-slate-800 group-hover:text-miku transition-colors">
-                                                                    {item.music.title}
+                                                                    <TranslatedText
+                                                                        original={item.music.title}
+                                                                        category="music"
+                                                                        field="title"
+                                                                        originalClassName="truncate block"
+                                                                        translationClassName="text-xs text-slate-500 truncate block font-normal"
+                                                                    />
                                                                 </p>
                                                                 <p className="text-xs text-slate-500">🎵 音乐</p>
                                                             </div>

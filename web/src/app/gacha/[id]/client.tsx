@@ -8,6 +8,7 @@ import { ICardInfo, IGachaInfo, GACHA_TYPE_LABELS, getRarityNumber, isTrainableC
 import { getGachaLogoUrl, getGachaScreenUrl, getCardThumbnailUrl } from "@/lib/assets";
 import { useTheme } from "@/contexts/ThemeContext";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 // Local attribute icon mapping
 const LOCAL_ATTR_ICONS: Record<string, string> = {
@@ -156,7 +157,13 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {gacha.name}
+                            <TranslatedText
+                                original={gacha.name}
+                                category="gacha"
+                                field="name"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -178,7 +185,13 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-                        {gacha.name}
+                        <TranslatedText
+                            original={gacha.name}
+                            category="gacha"
+                            field="name"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                 </div>
 
@@ -282,7 +295,18 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="ID" value={`#${gacha.id}`} />
-                                <InfoRow label="名称" value={gacha.name} />
+                                <InfoRow
+                                    label="名称"
+                                    value={
+                                        <TranslatedText
+                                            original={gacha.name}
+                                            category="gacha"
+                                            field="name"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="类型" value={GACHA_TYPE_LABELS[gacha.gachaType] || gacha.gachaType} />
                                 <InfoRow label="开始时间" value={formatDate(gacha.startAt)} />
                                 <InfoRow label="结束时间" value={formatDate(gacha.endAt)} />

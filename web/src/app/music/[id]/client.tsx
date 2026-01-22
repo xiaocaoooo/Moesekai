@@ -24,6 +24,7 @@ import { CHARACTER_NAMES } from "@/types/types";
 import { useTheme, AssetSourceType } from "@/contexts/ThemeContext";
 import { getCharacterIconUrl, getEventBannerUrl } from "@/lib/assets";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 // Difficulty order for tabs
 const DIFFICULTY_ORDER: MusicDifficultyType[] = ["easy", "normal", "hard", "expert", "master", "append"];
@@ -324,7 +325,13 @@ export default function MusicDetailPage() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {music.title}
+                            <TranslatedText
+                                original={music.title}
+                                category="music"
+                                field="title"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -349,7 +356,13 @@ export default function MusicDetailPage() {
                         </div>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800 mb-2">
-                        {music.title}
+                        <TranslatedText
+                            original={music.title}
+                            category="music"
+                            field="title"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                     <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-slate-600">{music.composer}</span>
@@ -407,7 +420,18 @@ export default function MusicDetailPage() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="ID" value={`#${music.id}`} />
-                                <InfoRow label="标题" value={music.title} />
+                                <InfoRow
+                                    label="标题"
+                                    value={
+                                        <TranslatedText
+                                            original={music.title}
+                                            category="music"
+                                            field="title"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="作曲" value={music.composer} />
                                 <InfoRow label="编曲" value={music.arranger} />
                                 <InfoRow label="作词" value={music.lyricist} />
@@ -624,7 +648,13 @@ export default function MusicDetailPage() {
                                                         </span>
                                                     </div>
                                                     <h3 className="text-white font-bold text-lg leading-tight truncate">
-                                                        {event.name}
+                                                        <TranslatedText
+                                                            original={event.name}
+                                                            category="events"
+                                                            field="name"
+                                                            originalClassName="truncate block"
+                                                            translationClassName="text-sm font-medium text-white/90 truncate block mt-0.5"
+                                                        />
                                                     </h3>
                                                 </div>
                                             </div>
@@ -739,7 +769,13 @@ function VocalPlayer({ vocal, fillerSec, assetSource }: { vocal: any; fillerSec:
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="text-sm font-bold text-slate-700 truncate">
-                            {vocal.caption}
+                            <TranslatedText
+                                original={vocal.caption}
+                                category="music"
+                                field="vocalCaption"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </div>
                         <div className="flex items-center gap-2">
                             {/* Download Button */}

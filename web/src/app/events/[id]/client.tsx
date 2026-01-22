@@ -17,6 +17,7 @@ import { getEventLogoUrl, getCharacterIconUrl, getCardThumbnailUrl, getEventBann
 import { CHARACTER_NAMES, getRarityNumber, RARITY_DISPLAY, isTrainableCard } from "@/types/types";
 import { useTheme } from "@/contexts/ThemeContext";
 import { fetchMasterData, fetchWithCompression } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 // Asset URL helpers - Now imported from @/lib/assets
 
@@ -274,7 +275,13 @@ export default function EventDetailPage() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {event.name}
+                            <TranslatedText
+                                original={event.name}
+                                category="events"
+                                field="name"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -299,7 +306,13 @@ export default function EventDetailPage() {
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-                        {event.name}
+                        <TranslatedText
+                            original={event.name}
+                            category="events"
+                            field="name"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                 </div>
 
@@ -428,7 +441,18 @@ export default function EventDetailPage() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="ID" value={`#${event.id}`} />
-                                <InfoRow label="名称" value={event.name} />
+                                <InfoRow
+                                    label="名称"
+                                    value={
+                                        <TranslatedText
+                                            original={event.name}
+                                            category="events"
+                                            field="name"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="类型" value={EVENT_TYPE_NAMES[event.eventType as EventType]} />
                                 <InfoRow label="开始时间" value={formatDate(event.startAt)} />
                                 <InfoRow label="结束时间" value={formatDate(event.aggregateAt)} />
@@ -528,7 +552,13 @@ export default function EventDetailPage() {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="font-bold text-slate-800 truncate group-hover:text-miku transition-colors">
-                                                        {music.title}
+                                                        <TranslatedText
+                                                            original={music.title}
+                                                            category="music"
+                                                            field="title"
+                                                            originalClassName="truncate block"
+                                                            translationClassName="text-xs text-slate-500 truncate block font-normal"
+                                                        />
                                                     </p>
                                                     <p className="text-xs text-slate-500 font-mono">ID: {music.id}</p>
                                                 </div>
@@ -571,7 +601,13 @@ export default function EventDetailPage() {
                                                     </span>
                                                 </div>
                                                 <h3 className="text-white font-bold text-lg leading-tight truncate">
-                                                    {virtualLive.name}
+                                                    <TranslatedText
+                                                        original={virtualLive.name}
+                                                        category="virtualLive"
+                                                        field="name"
+                                                        originalClassName="truncate block"
+                                                        translationClassName="text-sm font-medium text-white/90 truncate block mt-0.5"
+                                                    />
                                                 </h3>
                                             </div>
                                         </div>

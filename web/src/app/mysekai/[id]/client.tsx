@@ -21,6 +21,7 @@ import {
     IMysekaiGameCharacterUnitGroup,
 } from "@/types/mysekai";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 // Map virtual singer unit-specific character IDs to base character IDs
 // 27-31: Miku (L/n, MMJ, VBS, WxS, 25-ji versions) -> 21
@@ -265,7 +266,13 @@ export default function MysekaiFixtureDetailClient() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {fixture.name}
+                            <TranslatedText
+                                original={fixture.name}
+                                category="mysekai"
+                                field="fixtureName"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -283,7 +290,13 @@ export default function MysekaiFixtureDetailClient() {
                         )}
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-                        {fixture.name}
+                        <TranslatedText
+                            original={fixture.name}
+                            category="mysekai"
+                            field="fixtureName"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                 </div>
 
@@ -324,7 +337,18 @@ export default function MysekaiFixtureDetailClient() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="ID" value={`#${fixture.id}`} />
-                                <InfoRow label="名称" value={fixture.name} />
+                                <InfoRow
+                                    label="名称"
+                                    value={
+                                        <TranslatedText
+                                            original={fixture.name}
+                                            category="mysekai"
+                                            field="fixtureName"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="类型" value={fixture.mysekaiFixtureType} />
                                 {genreName && <InfoRow label="主类别" value={genreName} />}
                                 {subGenreName && <InfoRow label="子类别" value={subGenreName} />}

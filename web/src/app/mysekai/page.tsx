@@ -15,6 +15,7 @@ import {
     IMysekaiFixtureTag
 } from "@/types/mysekai";
 import { fetchMasterData } from "@/lib/fetch";
+import { TranslatedText } from "@/components/common/TranslatedText";
 
 // Genre name translation map (Japanese -> Chinese)
 const GENRE_NAME_MAP: Record<string, string> = {
@@ -669,8 +670,14 @@ function MysekaiContent() {
                                             />
                                         </div>
                                         <div className="flex-1 flex flex-col">
-                                            <h3 className="font-bold text-sm text-slate-800 line-clamp-2 mb-1 group-hover:text-miku transition-colors" title={fixture.name}>
-                                                {fixture.name}
+                                            <h3 className="font-bold text-sm text-slate-800 mb-1 group-hover:text-miku transition-colors" title={fixture.name}>
+                                                <TranslatedText
+                                                    original={fixture.name}
+                                                    category="mysekai"
+                                                    field="fixtureName"
+                                                    originalClassName="line-clamp-2 block"
+                                                    translationClassName="text-xs font-medium text-slate-400 line-clamp-1 block"
+                                                />
                                             </h3>
                                             <div className="mt-auto flex flex-wrap gap-1">
                                                 <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-medium">

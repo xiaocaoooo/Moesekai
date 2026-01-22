@@ -349,7 +349,13 @@ export default function CardDetailPage() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {card.prefix}
+                            <TranslatedText
+                                original={card.prefix}
+                                category="cards"
+                                field="prefix"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -572,7 +578,18 @@ export default function CardDetailPage() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="卡牌ID" value={`#${card.id}`} />
-                                <InfoRow label="称号" value={card.prefix} />
+                                <InfoRow
+                                    label="称号"
+                                    value={
+                                        <TranslatedText
+                                            original={card.prefix}
+                                            category="cards"
+                                            field="prefix"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="角色" value={characterName} />
                                 <InfoRow label="卡牌类型" value={
                                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${supplyName === "常驻" ? "bg-slate-100 text-slate-500" :
@@ -839,7 +856,13 @@ export default function CardDetailPage() {
                                                     </span>
                                                 </div>
                                                 <h3 className="text-white font-bold text-lg leading-tight truncate">
-                                                    {relatedEvent.name}
+                                                    <TranslatedText
+                                                        original={relatedEvent.name}
+                                                        category="events"
+                                                        field="name"
+                                                        originalClassName="truncate block"
+                                                        translationClassName="text-sm font-medium text-white/90 truncate block mt-0.5"
+                                                    />
                                                 </h3>
                                             </div>
                                         </div>
@@ -884,7 +907,13 @@ export default function CardDetailPage() {
                                                     </span>
                                                 </div>
                                                 <h3 className="text-slate-800 font-bold text-sm leading-snug w-full line-clamp-2 text-shadow-sm">
-                                                    {gacha.name}
+                                                    <TranslatedText
+                                                        original={gacha.name}
+                                                        category="gacha"
+                                                        field="name"
+                                                        originalClassName="truncate block"
+                                                        translationClassName="text-xs font-medium text-slate-500 truncate block mt-0.5"
+                                                    />
                                                 </h3>
                                             </div>
                                         </Link>
@@ -982,7 +1011,13 @@ function GachaPhraseRow({ phrase, assetbundleName }: { phrase: string; assetbund
                     )}
                 </button>
                 <p className="text-sm font-medium text-slate-800 leading-relaxed pt-1">
-                    {phrase}
+                    <TranslatedText
+                        original={phrase}
+                        category="cards"
+                        field="gachaPhrase"
+                        originalClassName=""
+                        translationClassName="block text-xs font-normal text-slate-500 mt-1"
+                    />
                 </p>
                 <audio
                     ref={audioRef}
