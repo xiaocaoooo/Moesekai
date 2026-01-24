@@ -9,9 +9,10 @@ import { TranslatedText } from "@/components/common/TranslatedText";
 interface EventItemProps {
     event: IEventInfo;
     isSpoiler?: boolean;
+    basePath?: string;
 }
 
-export default function EventItem({ event, isSpoiler }: EventItemProps) {
+export default function EventItem({ event, isSpoiler, basePath = "/events" }: EventItemProps) {
     const { assetSource } = useTheme();
     const logoUrl = getEventLogoUrl(event.assetbundleName, assetSource);
     const status = getEventStatus(event);
@@ -27,7 +28,7 @@ export default function EventItem({ event, isSpoiler }: EventItemProps) {
     };
 
     return (
-        <Link href={`/events/${event.id}`} className="group block">
+        <Link href={`${basePath}/${event.id}`} className="group block">
             <div className="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:ring-miku/30">
                 {/* Event Logo */}
                 <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">

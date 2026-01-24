@@ -206,3 +206,58 @@ export function getCharacterSelectUrl(characterId: number, source: AssetSourceTy
     return `${baseUrl}/startapp/character/character_select/chr_tl_${characterId}.png`;
 }
 
+// ==================== Story/Scenario Asset URLs ====================
+
+// ==================== Story/Scenario Asset URLs ====================
+
+// Get scenario JSON URL (uses /ondemand/ and .json extension)
+// Rule: Use Snowy or Uni. Haruki source defaults to Snowy.
+export function getScenarioJsonUrl(scenarioPath: string, source: AssetSourceType = "uni"): string {
+    let targetSource = source;
+    if (source === "haruki") {
+        targetSource = "snowyassets";
+    }
+    const baseUrl = getAssetBaseUrl(targetSource);
+    // scenarioPath format: event_story/{assetbundleName}/scenario/{scenarioId}
+    return `${baseUrl}/ondemand/${scenarioPath}.json`;
+}
+
+// Get scenario background image URL (uses /ondemand/ and .png extension)
+// Rule: Use Snowy or Haruki. Uni source defaults to Haruki.
+export function getBackgroundImageUrl(bgName: string, source: AssetSourceType = "uni"): string {
+    let targetSource = source;
+    if (source === "uni") {
+        targetSource = "haruki";
+    }
+    const baseUrl = getAssetBaseUrl(targetSource);
+    return `${baseUrl}/ondemand/scenario/background/${bgName}/${bgName}.png`;
+}
+
+// Get story voice URL (audio only on Haruki/Snowy, not Uni)
+// Rule: Use Snowy or Haruki. Uni source defaults to Haruki.
+export function getStoryVoiceUrl(scenarioId: string, voiceId: string, source: AssetSourceType = "uni"): string {
+    const baseUrl = source === "snowyassets" ? ASSET_BASE_URL_SNOWY : ASSET_BASE_URL_HARUKI;
+    return `${baseUrl}/ondemand/sound/scenario/voice/${scenarioId}/${voiceId}.mp3`;
+}
+
+// Get story BGM URL (audio only on Haruki/Snowy)
+// Rule: Use Snowy or Haruki. Uni source defaults to Haruki.
+export function getStoryBgmUrl(bgmName: string, source: AssetSourceType = "uni"): string {
+    const baseUrl = source === "snowyassets" ? ASSET_BASE_URL_SNOWY : ASSET_BASE_URL_HARUKI;
+    return `${baseUrl}/ondemand/sound/scenario/bgm/${bgmName}/${bgmName}.mp3`;
+}
+
+// Get story sound effect URL (audio only on Haruki/Snowy)
+// Rule: Use Snowy or Haruki. Uni source defaults to Haruki.
+export function getStorySoundEffectUrl(seName: string, source: AssetSourceType = "uni"): string {
+    const baseUrl = source === "snowyassets" ? ASSET_BASE_URL_SNOWY : ASSET_BASE_URL_HARUKI;
+    return `${baseUrl}/ondemand/sound/scenario/se/${seName}.mp3`;
+}
+
+// Get story episode image URL
+// Rule: Use Snowy assets.
+export function getStoryEpisodeImageUrl(assetbundleName: string, episodeNo: number): string {
+    const paddedNo = episodeNo.toString().padStart(2, "0");
+    return `${ASSET_BASE_URL_SNOWY}/ondemand/event_story/${assetbundleName}/episode_image/${assetbundleName}_${paddedNo}.png`;
+}
+

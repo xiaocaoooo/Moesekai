@@ -5,6 +5,7 @@ import { IEventInfo } from "@/types/events";
 interface EventGridProps {
     events: IEventInfo[];
     isLoading?: boolean;
+    basePath?: string;
 }
 
 // Skeleton loading component
@@ -21,7 +22,7 @@ function EventSkeleton() {
     );
 }
 
-export default function EventGrid({ events, isLoading = false }: EventGridProps) {
+export default function EventGrid({ events, isLoading = false, basePath = "/events" }: EventGridProps) {
     // Show skeletons while loading
     if (isLoading) {
         return (
@@ -54,7 +55,7 @@ export default function EventGrid({ events, isLoading = false }: EventGridProps)
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {events.map(event => {
                 const isSpoiler = event.startAt > now;
-                return <EventItem key={event.id} event={event} isSpoiler={isSpoiler} />;
+                return <EventItem key={event.id} event={event} isSpoiler={isSpoiler} basePath={basePath} />;
             })}
         </div>
     );
