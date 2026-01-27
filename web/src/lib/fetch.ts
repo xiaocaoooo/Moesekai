@@ -28,7 +28,17 @@ function getCurrentServer(): ServerSourceType {
     if (typeof window === "undefined") return "jp";
     const saved = localStorage.getItem("server-source");
     if (saved === "jp" || saved === "cn") return saved;
+
     return "jp";
+}
+
+/**
+ * Get current master data version from localStorage
+ * Used to ensure we fetch data matching the currently active version (cache persistence)
+ */
+function getLocalVersion(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(MASTERDATA_VERSION_KEY);
 }
 
 /**
@@ -134,9 +144,27 @@ export function clearCacheBypassFlag(): void {
  */
 export async function fetchMasterData<T>(path: string, noCache: boolean = false): Promise<T> {
     // Auto-detect if we need to bypass cache (after version sync refresh)
+    // Auto-detect if we need to bypass cache (after version sync refresh)
     const shouldNoCache = noCache || shouldBypassCache();
     const fetchOptions: RequestInit = shouldNoCache ? { cache: "no-store" } : {};
-    const cacheBuster = shouldNoCache && !isBuildTime() ? `?_t=${Date.now()}` : "";
+
+    // Determine query parameters
+    const params = new URLSearchParams();
+
+    // 1. Version param (persistence enforcement)
+    // If we have a stored version, append it. This ensures that after a "Force Refresh"
+    // (which updates the stored version), subsequent normal loads use the NEW version's URL.
+    const localVersion = getLocalVersion();
+    if (localVersion) {
+        params.append("v", localVersion);
+    }
+
+    // 2. Cache buster (bypass enforcement)
+    if (shouldNoCache && !isBuildTime()) {
+        params.append("_t", Date.now().toString());
+    }
+
+    const queryString = params.toString() ? `?${params.toString()}` : "";
 
     // Build-time: use GitHub raw (no fallback needed)
     if (isBuildTime()) {
@@ -150,7 +178,7 @@ export async function fetchMasterData<T>(path: string, noCache: boolean = false)
     }
 
     // Runtime: try primary server first, then fallback
-    const primaryUrl = `${getMasterBaseUrl()}/${path}${cacheBuster}`;
+    const primaryUrl = `${getMasterBaseUrl()}/${path}${queryString}`;
     try {
         const response = await fetchWithCompression(primaryUrl, fetchOptions);
         if (response.ok) {
@@ -164,7 +192,7 @@ export async function fetchMasterData<T>(path: string, noCache: boolean = false)
     }
 
     // Try fallback server
-    const fallbackUrl = `${getFallbackMasterBaseUrl()}/${path}${cacheBuster}`;
+    const fallbackUrl = `${getFallbackMasterBaseUrl()}/${path}${queryString}`;
     const fallbackResponse = await fetchWithCompression(fallbackUrl, fetchOptions);
     if (!fallbackResponse.ok) {
         throw new Error(`Failed to fetch master data: ${path} (both primary and fallback servers failed)`);
