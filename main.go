@@ -865,6 +865,17 @@ func main() {
 		w.Write(body)
 	})
 
+	// Bilibili Image Cache
+	type ImageCacheItem struct {
+		Data        []byte
+		ContentType string
+		ExpiresAt   time.Time
+	}
+	var (
+		imageCache = make(map[string]ImageCacheItem)
+		imgMutex   sync.RWMutex
+	)
+
 	// Bilibili Image Proxy
 	mux.HandleFunc("/api/bilibili/image", func(w http.ResponseWriter, r *http.Request) {
 		imageUrl := r.URL.Query().Get("url")
@@ -872,6 +883,20 @@ func main() {
 			http.Error(w, "Missing url parameter", http.StatusBadRequest)
 			return
 		}
+
+		// Check Cache
+		imgMutex.RLock()
+		if item, ok := imageCache[imageUrl]; ok {
+			if time.Now().Before(item.ExpiresAt) {
+				w.Header().Set("Content-Type", item.ContentType)
+				w.Header().Set("Cache-Control", "public, max-age=31536000")
+				w.Header().Set("X-Cache", "HIT")
+				w.Write(item.Data)
+				imgMutex.RUnlock()
+				return
+			}
+		}
+		imgMutex.RUnlock()
 
 		// Create request to Bilibili
 		req, err := http.NewRequest("GET", imageUrl, nil)
@@ -891,12 +916,44 @@ func main() {
 		}
 		defer resp.Body.Close()
 
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, "Failed to read image", http.StatusInternalServerError)
+			return
+		}
+
+		// Cache Success Response (Cache for 10 minutes to save memory, client caches for 1 year)
+		// Or since user asked explicitly for cache, maybe they want it to persist longer during session?
+		// Let's do 1 hour server-side.
+		if resp.StatusCode == http.StatusOK {
+			imgMutex.Lock()
+			// Simple eviction if too big (e.g. > 1000 items)
+			if len(imageCache) > 1000 {
+				// Random eviction or just clear half? Clearing half is easiest.
+				count := 0
+				for k := range imageCache {
+					delete(imageCache, k)
+					count++
+					if count > 500 {
+						break
+					}
+				}
+			}
+			imageCache[imageUrl] = ImageCacheItem{
+				Data:        data,
+				ContentType: resp.Header.Get("Content-Type"),
+				ExpiresAt:   time.Now().Add(1 * time.Hour),
+			}
+			imgMutex.Unlock()
+		}
+
 		// Copy headers
 		w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 		w.Header().Set("Cache-Control", "public, max-age=31536000") // Cache for 1 year
+		w.Header().Set("X-Cache", "MISS")
 
 		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
+		w.Write(data)
 	})
 
 	// Static

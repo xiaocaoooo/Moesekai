@@ -166,8 +166,8 @@ export default function BilibiliDynamicTab() {
                         className={`
                             flex items-center rounded-xl text-sm font-medium transition-all cursor-pointer select-none border
                             ${activeAccount.id === account.id
-                                ? "bg-pink-500 text-white shadow-lg shadow-pink-500/20 border-pink-500"
-                                : "bg-white text-slate-600 hover:bg-pink-50 border border-slate-100"
+                                ? "bg-miku text-white shadow-lg shadow-miku/20 border-miku"
+                                : "bg-white text-slate-600 hover:bg-miku/5 border border-slate-100"
                             }
                         `}
                     >
@@ -186,7 +186,7 @@ export default function BilibiliDynamicTab() {
                             rel="noopener noreferrer"
                             className={`px-3 py-2 flex items-center justify-center rounded-r-xl transition-colors ${activeAccount.id === account.id
                                 ? "hover:bg-white/20 text-white"
-                                : "hover:bg-slate-100 text-slate-400 hover:text-pink-500"
+                                : "hover:bg-slate-100 text-slate-400 hover:text-miku"
                                 }`}
                             onClick={(e) => e.stopPropagation()}
                             title="访问主页"
@@ -247,7 +247,7 @@ export default function BilibiliDynamicTab() {
                         return (
                             <div
                                 key={item.id_str}
-                                className="bg-white p-5 rounded-2xl border border-slate-100 hover:shadow-sm hover:border-pink-200 transition-all group relative"
+                                className="bg-white p-5 rounded-2xl border border-slate-100 hover:shadow-sm hover:border-miku/30 transition-all group relative"
                             >
                                 {/* Header (Avatar + Name + Home Link) */}
                                 <div className="flex justify-between items-start mb-3 relative z-10">
@@ -256,11 +256,11 @@ export default function BilibiliDynamicTab() {
                                             <img
                                                 src={getProxyUrl(item.modules.module_author.face)}
                                                 alt={item.modules.module_author.name}
-                                                className="w-10 h-10 rounded-full border border-slate-100 hover:border-pink-300 transition-colors"
+                                                className="w-10 h-10 rounded-full border border-slate-100 hover:border-miku/50 transition-colors"
                                             />
                                         </a>
                                         <div>
-                                            <a href={spaceUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-800 text-sm hover:text-pink-500 transition-colors block">
+                                            <a href={spaceUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-slate-800 text-sm hover:text-miku transition-colors block">
                                                 {item.modules.module_author.name}
                                                 <span className="ml-2 text-xs font-normal text-slate-400">
                                                     {item.modules.module_author.pub_action}
@@ -348,7 +348,7 @@ export default function BilibiliDynamicTab() {
                                                 </div>
                                             </div>
                                             <div className="flex-1 py-1 min-w-0">
-                                                <h4 className="font-bold text-sm text-slate-800 line-clamp-2 mb-1 group-hover/body:text-pink-500 transition-colors">
+                                                <h4 className="font-bold text-sm text-slate-800 line-clamp-2 mb-1 group-hover/body:text-miku transition-colors">
                                                     {item.modules.module_dynamic.major.archive.title}
                                                 </h4>
                                                 <div className="flex items-center gap-3 text-xs text-slate-400">
@@ -367,15 +367,15 @@ export default function BilibiliDynamicTab() {
 
                                     {/* Footer Stats */}
                                     <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
-                                        <div className="flex items-center gap-1.5 group-hover/body:text-pink-500 transition-colors">
+                                        <div className="flex items-center gap-1.5 group-hover/body:text-miku transition-colors">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
                                             {formatNumber(item.modules.module_stat.forward.count)}
                                         </div>
-                                        <div className="flex items-center gap-1.5 group-hover/body:text-pink-500 transition-colors">
+                                        <div className="flex items-center gap-1.5 group-hover/body:text-miku transition-colors">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
                                             {formatNumber(item.modules.module_stat.comment.count)}
                                         </div>
-                                        <div className="flex items-center gap-1.5 group-hover/body:text-pink-500 transition-colors">
+                                        <div className="flex items-center gap-1.5 group-hover/body:text-miku transition-colors">
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                                             {formatNumber(item.modules.module_stat.like.count)}
                                         </div>
@@ -416,7 +416,7 @@ function ExpandableText({ text }: { text: string | undefined }) {
                         e.stopPropagation();
                         setExpanded(!expanded);
                     }}
-                    className="text-pink-500 text-xs font-bold mt-1 hover:underline"
+                    className="text-miku text-xs font-bold mt-1 hover:underline"
                 >
                     {expanded ? "收起全文" : "查看全文"}
                 </button>
