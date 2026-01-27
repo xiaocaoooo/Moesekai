@@ -9,7 +9,7 @@ import { getEventBannerUrl, getEventLogoUrl } from "@/lib/assets";
 import { loadTranslations, TranslationData } from "@/lib/translations";
 
 export default function CurrentEventTab() {
-    const { assetSource } = useTheme();
+    const { assetSource, themeColor } = useTheme();
     const [currentEvent, setCurrentEvent] = useState<IEventInfo | null>(null);
     const [translations, setTranslations] = useState<TranslationData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -125,13 +125,13 @@ export default function CurrentEventTab() {
                 {/* Right Side: Info (55%) */}
                 <div className="w-[55%] relative flex flex-col justify-center p-3 sm:p-4 z-10 overflow-hidden">
 
-                    {/* Progress Background Overlay (Limited to right side) */}
+                    {/* Progress Background Overlay (Limited to right side) - Using Theme Color */}
                     {status === "ongoing" && (
                         <div
                             className="absolute inset-y-0 left-0 transition-all duration-500 ease-out z-0 pointer-events-none"
                             style={{
                                 width: `${progressPercent}%`,
-                                backgroundColor: eventTypeColor,
+                                backgroundColor: themeColor,
                                 opacity: 0.12
                             }}
                         />
@@ -170,7 +170,7 @@ export default function CurrentEventTab() {
                         </div>
                     </div>
 
-                    {/* Big Percentage (Bottom Right) - Fully opaque black as requested */}
+                    {/* Big Percentage (Bottom Right) - Fully opaque black */}
                     {status === "ongoing" && (
                         <div
                             className="absolute bottom-0 right-2 text-4xl sm:text-5xl font-black text-black select-none z-10 tracking-tighter"
