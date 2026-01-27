@@ -91,6 +91,9 @@ const ACCOUNTS = [
     { id: "3546749308242173", name: "国服资讯 (初音未来缤纷舞台)", avatar: "https://i1.hdslb.com/bfs/face/178225586617a264024317769963865664a754b2.jpg" },
 ];
 
+const feedCache: Record<string, { items: DynamicItem[], timestamp: number }> = {};
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes frontend cache
+
 export default function BilibiliDynamicTab() {
     const [activeAccount, setActiveAccount] = useState(ACCOUNTS[0]);
     const [dynamics, setDynamics] = useState<DynamicItem[]>([]);
@@ -100,6 +103,13 @@ export default function BilibiliDynamicTab() {
     useEffect(() => {
         async function fetchDynamics() {
             try {
+                // Check Cache
+                if (feedCache[activeAccount.id] && Date.now() - feedCache[activeAccount.id].timestamp < CACHE_DURATION) {
+                    setDynamics(feedCache[activeAccount.id].items);
+                    setIsLoading(false);
+                    return;
+                }
+
                 setIsLoading(true);
                 setError(null);
                 const res = await fetch(`/api/bilibili/dynamic/${activeAccount.id}`);
@@ -115,6 +125,12 @@ export default function BilibiliDynamicTab() {
                 items = items.filter(item => item.modules.module_tag?.text !== "置顶");
                 // Limit to 3 items
                 setDynamics(items.slice(0, 3));
+
+                // Save to Cache
+                feedCache[activeAccount.id] = {
+                    items: items.slice(0, 3),
+                    timestamp: Date.now()
+                };
             } catch (err) {
                 console.error("Failed to fetch dynamics:", err);
                 setError(err instanceof Error ? err.message : "加载失败");
@@ -133,10 +149,32 @@ export default function BilibiliDynamicTab() {
         return num.toString();
     };
 
-    const getProxyUrl = (url: string) => {
+    const getProxyUrl = (url: string, type: 'avatar' | 'cover' | 'grid' | 'preview' = 'preview') => {
         if (!url) return "";
-        // Use backend proxy to avoid 403 Forbidden
-        return `/api/bilibili/image?url=${encodeURIComponent(url)}`;
+
+        // Remove existing params if any to avoid duplication
+        let cleanUrl = url.split('@')[0];
+
+        // Add Bilibili Image Processing Suffixes
+        let suffix = "";
+        switch (type) {
+            case 'avatar':
+                suffix = "@100w_100h_1c.webp";
+                break;
+            case 'cover': // Video/Article covers (16:9 usually)
+                suffix = "@480w_270h_1c.webp";
+                break;
+            case 'grid': // 9-grid images (Square)
+                suffix = "@300w_300h_1c.webp";
+                break;
+            case 'preview': // Full screen preview (Original or very large)
+                // Use .webp for better compression even on original
+                suffix = "@.webp";
+                break;
+        }
+
+        const optimizedUrl = cleanUrl + suffix;
+        return `/api/bilibili/image?url=${encodeURIComponent(optimizedUrl)}`;
     };
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -254,7 +292,7 @@ export default function BilibiliDynamicTab() {
                                     <div className="flex gap-3">
                                         <a href={spaceUrl} target="_blank" rel="noopener noreferrer" className="block flex-shrink-0">
                                             <img
-                                                src={getProxyUrl(item.modules.module_author.face)}
+                                                src={getProxyUrl(item.modules.module_author.face, 'avatar')}
                                                 alt={item.modules.module_author.name}
                                                 className="w-10 h-10 rounded-full border border-slate-100 hover:border-miku/50 transition-colors"
                                             />
@@ -297,11 +335,11 @@ export default function BilibiliDynamicTab() {
                                                     onClick={(e) => {
                                                         e.preventDefault(); // Prevent link navigation
                                                         e.stopPropagation();
-                                                        setPreviewImage(getProxyUrl(img.src));
+                                                        setPreviewImage(getProxyUrl(img.src, 'preview')); // High res for preview
                                                     }}
                                                 >
                                                     <img
-                                                        src={getProxyUrl(img.src)}
+                                                        src={getProxyUrl(img.src, 'grid')} // Thumbnail for grid
                                                         alt="Dynamic Image"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
                                                         loading="lazy"
@@ -321,11 +359,11 @@ export default function BilibiliDynamicTab() {
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        setPreviewImage(getProxyUrl(img.url));
+                                                        setPreviewImage(getProxyUrl(img.url, 'preview'));
                                                     }}
                                                 >
                                                     <img
-                                                        src={getProxyUrl(img.url)}
+                                                        src={getProxyUrl(img.url, 'grid')}
                                                         alt="Dynamic Image"
                                                         className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
                                                         loading="lazy"
@@ -339,7 +377,7 @@ export default function BilibiliDynamicTab() {
                                         <div className="flex gap-3 bg-slate-50 p-2 rounded-xl mb-3 group-hover/body:bg-slate-100 border border-slate-100 transition-colors">
                                             <div className="relative w-32 aspect-video rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
                                                 <img
-                                                    src={getProxyUrl(item.modules.module_dynamic.major.archive.cover)}
+                                                    src={getProxyUrl(item.modules.module_dynamic.major.archive.cover, 'cover')}
                                                     alt={item.modules.module_dynamic.major.archive.title}
                                                     className="w-full h-full object-cover"
                                                 />
