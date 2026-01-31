@@ -900,20 +900,20 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                                                                 />
                                                             </div>
                                                             {/* Attribute Badge - Larger */}
-                                                            <div className="absolute top-0.5 left-0.5 w-5 h-5 drop-shadow-md z-10">
+                                                            <div className="absolute top-0.5 left-0.5 w-3.5 h-3.5 sm:w-5 sm:h-5 drop-shadow-md z-10">
                                                                 <Image src={attrIcon} alt={card.attr} fill className="object-contain" unoptimized />
                                                             </div>
                                                             {/* Rarity Badge - Larger */}
                                                             <div className="absolute top-0.5 right-0.5 z-10">
-                                                                <div className="bg-black/60 backdrop-blur-[2px] rounded-full px-1.5 py-0.5 flex items-center gap-0.5 min-h-[16px]">
+                                                                <div className="bg-black/60 backdrop-blur-[2px] rounded-full px-1 py-0 sm:px-1.5 sm:py-0.5 flex items-center gap-0.5 min-h-[12px] sm:min-h-[16px]">
                                                                     {card.cardRarityType === "rarity_birthday" ? (
-                                                                        <div className="w-3.5 h-3.5 relative">
+                                                                        <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 relative">
                                                                             <Image src="/data/icon/birthday.webp" alt="Birthday" fill className="object-contain" unoptimized />
                                                                         </div>
                                                                     ) : (
                                                                         <>
-                                                                            <span className="text-white text-[10px] font-bold leading-none">{rarityNum}</span>
-                                                                            <div className="w-3 h-3 relative">
+                                                                            <span className="text-white text-[7px] sm:text-[10px] font-bold leading-none">{rarityNum}</span>
+                                                                            <div className="w-2 h-2 sm:w-3 sm:h-3 relative">
                                                                                 <Image src="/data/icon/star.webp" alt="Star" fill className="object-contain" unoptimized />
                                                                             </div>
                                                                         </>
@@ -922,13 +922,13 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                                                             </div>
                                                             {/* UP Indicator */}
                                                             {isPickup && (
-                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-pink-500 to-pink-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-tl-lg shadow-sm leading-none">
+                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-pink-500 to-pink-400 text-white text-[8px] sm:text-[9px] font-black px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-tl-lg shadow-sm leading-none">
                                                                     UP
                                                                 </div>
                                                             )}
                                                             {/* 4-Star Indicator (if not pickup) */}
                                                             {!isPickup && is4Star && (
-                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-yellow-400 to-yellow-300 text-white text-[9px] font-black px-1.5 py-0.5 rounded-tl-lg shadow-sm leading-none">
+                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-yellow-400 to-yellow-300 text-white text-[8px] sm:text-[9px] font-black px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-tl-lg shadow-sm leading-none">
                                                                     4星
                                                                 </div>
                                                             )}
@@ -1003,20 +1003,20 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                                                                 />
                                                             </div>
                                                             {/* Attribute Badge - Larger */}
-                                                            <div className="absolute top-0.5 left-0.5 w-5 h-5 drop-shadow-md z-10">
+                                                            <div className="absolute top-0.5 left-0.5 w-3.5 h-3.5 sm:w-5 sm:h-5 drop-shadow-md z-10">
                                                                 <Image src={attrIcon} alt={card.attr} fill className="object-contain" unoptimized />
                                                             </div>
                                                             {/* Rarity Badge - Larger */}
                                                             <div className="absolute top-0.5 right-0.5 z-10">
-                                                                <div className="bg-black/60 backdrop-blur-[2px] rounded-full px-1.5 py-0.5 flex items-center gap-0.5 min-h-[16px]">
+                                                                <div className="bg-black/60 backdrop-blur-[2px] rounded-full px-1 py-0 sm:px-1.5 sm:py-0.5 flex items-center gap-0.5 min-h-[12px] sm:min-h-[16px]">
                                                                     {card.cardRarityType === "rarity_birthday" ? (
-                                                                        <div className="w-3.5 h-3.5 relative">
+                                                                        <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 relative">
                                                                             <Image src="/data/icon/birthday.webp" alt="Birthday" fill className="object-contain" unoptimized />
                                                                         </div>
                                                                     ) : (
                                                                         <>
-                                                                            <span className="text-white text-[10px] font-bold leading-none">{rarityNum}</span>
-                                                                            <div className="w-3 h-3 relative">
+                                                                            <span className="text-white text-[7px] sm:text-[10px] font-bold leading-none">{rarityNum}</span>
+                                                                            <div className="w-2 h-2 sm:w-3 sm:h-3 relative">
                                                                                 <Image src="/data/icon/star.webp" alt="Star" fill className="object-contain" unoptimized />
                                                                             </div>
                                                                         </>
@@ -1025,19 +1025,19 @@ export default function GachaDetailClient({ gachaId }: GachaDetailClientProps) {
                                                             </div>
                                                             {/* UP Indicator */}
                                                             {isPickup && (
-                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-pink-500 to-pink-400 text-white text-[9px] font-black px-1.5 py-0.5 rounded-tl-lg shadow-sm leading-none">
+                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-pink-500 to-pink-400 text-white text-[8px] sm:text-[9px] font-black px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-tl-lg shadow-sm leading-none">
                                                                     UP
                                                                 </div>
                                                             )}
                                                             {/* 4-Star Indicator (if not pickup) */}
                                                             {!isPickup && is4Star && (
-                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-yellow-400 to-yellow-300 text-white text-[9px] font-black px-1.5 py-0.5 rounded-tl-lg shadow-sm leading-none">
+                                                                <div className="absolute bottom-0 right-0 z-10 bg-gradient-to-l from-yellow-400 to-yellow-300 text-white text-[8px] sm:text-[9px] font-black px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-tl-lg shadow-sm leading-none">
                                                                     4星
                                                                 </div>
                                                             )}
                                                             {/* Pity Count Badge */}
                                                             {pityCount > 0 && (
-                                                                <div className={`absolute bottom-0 left-0 z-10 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-tr-lg shadow-sm leading-none ${pityColorClass}`}>
+                                                                <div className={`absolute bottom-0 left-0 z-10 text-white text-[8px] sm:text-[10px] font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded-tr-lg shadow-sm leading-none ${pityColorClass}`}>
                                                                     {pityCount}
                                                                 </div>
                                                             )}
