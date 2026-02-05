@@ -6,6 +6,8 @@ import CurrentEventTab from "@/components/home/CurrentEventTab";
 import LatestCardsTab from "@/components/home/LatestCardsTab";
 import LatestMusicTab from "@/components/home/LatestMusicTab";
 import BilibiliDynamicTab from "@/components/home/BilibiliDynamicTab";
+import BirthdaySection from "@/components/home/BirthdaySection";
+import { getTodayBirthdays } from "@/lib/birthdays";
 
 type TabType = "event" | "cards" | "music";
 
@@ -152,6 +154,8 @@ const SHORTCUTS = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("event");
+  const todayBirthdays = getTodayBirthdays();
+  const hasTodayBirthday = todayBirthdays.length > 0;
 
   return (
     <MainLayout activeNav="首页" showLoader={true}>
@@ -187,8 +191,12 @@ export default function Home() {
         </div>
 
         {/* Tabs Section (Latest Info) */}
+        {hasTodayBirthday && <BirthdaySection />}
         <div className="w-full max-w-5xl">
-          <h2 className="text-xl font-bold text-primary-text mb-6 text-left opacity-80">最新</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-6 w-1 rounded-full bg-miku"></div>
+            <h2 className="text-xl font-bold text-primary-text opacity-80">最新</h2>
+          </div>
 
           {/* Tab Navigation */}
           <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
@@ -222,7 +230,10 @@ export default function Home() {
 
         {/* Shortcuts Section (捷径) */}
         <div className="w-full max-w-5xl">
-          <h2 className="text-xl font-bold text-primary-text mb-6 text-left opacity-80">捷径</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-6 w-1 rounded-full bg-miku"></div>
+            <h2 className="text-xl font-bold text-primary-text opacity-80">捷径</h2>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {SHORTCUTS.map((shortcut, index) => (
               <Link key={index} href={shortcut.href} className="group">
@@ -242,13 +253,22 @@ export default function Home() {
 
         {/* Dynamic Section (Bilibili) */}
         <div className="w-full max-w-5xl text-left">
-          <h2 className="text-xl font-bold text-primary-text mb-6 opacity-80">动态</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-6 w-1 rounded-full bg-miku"></div>
+            <h2 className="text-xl font-bold text-primary-text opacity-80">动态</h2>
+          </div>
           <BilibiliDynamicTab />
         </div>
 
+        {/* Birthday Section (if no birthday today, show at bottom) */}
+        {!hasTodayBirthday && <BirthdaySection />}
+
         {/* Friendly Links Section (友链) */}
-        <div className="w-full max-w-4xl mt-8">
-          <h2 className="text-xl font-bold text-primary-text mb-6 text-left opacity-80">友链</h2>
+        <div className="w-full max-w-5xl mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="h-6 w-1 rounded-full bg-miku"></div>
+            <h2 className="text-xl font-bold text-primary-text opacity-80">友链</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Link 1: SnowyBot */}
             <a href="https://snowybot.exmeaning.com" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
@@ -286,7 +306,7 @@ export default function Home() {
         </div>
 
         {/* Credits Section (鸣谢) */}
-        <div className="w-full max-w-4xl mt-8 pt-8 border-t border-slate-200/50">
+        <div className="w-full max-w-5xl mt-8 pt-8 border-t border-slate-200/50">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">鸣谢</h2>
             <div className="flex flex-wrap justify-center gap-4 text-xs">
