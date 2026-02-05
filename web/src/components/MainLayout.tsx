@@ -18,7 +18,7 @@ export default function MainLayout({
     showLoader = false
 }: MainLayoutProps) {
     return (
-        <main className="min-h-screen relative overflow-x-hidden selection:bg-miku selection:text-white font-sans flex flex-col">
+        <main className="min-h-screen relative selection:bg-miku selection:text-white font-sans flex flex-col">
             {/* Loading Animation */}
             {showLoader && <SekaiLoader />}
 

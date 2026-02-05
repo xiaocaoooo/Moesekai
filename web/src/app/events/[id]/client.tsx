@@ -372,7 +372,7 @@ export default function EventDetailPage() {
                             </div>
                         ) : (
                             /* Normal Mode: Tabs */
-                            <div className="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden lg:sticky lg:top-24">
+                            <div className="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar">
                                 {/* Tabs */}
                                 <div className="flex border-b border-slate-200">
                                     {[

@@ -381,7 +381,7 @@ export default function MusicDetailPage() {
                 {/* Main Content Grid - 2 Column Layout like Cards */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Column: Jacket Image */}
-                    <div>
+                    <div className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar">
                         <div className="bg-white rounded-2xl shadow-lg ring-1 ring-slate-200 overflow-hidden">
                             {/* Jacket Image */}
                             <div

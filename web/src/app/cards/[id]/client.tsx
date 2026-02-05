@@ -431,7 +431,7 @@ export default function CardDetailPage() {
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left: Card Image */}
-                    <div>
+                    <div className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar">
                         {isScreenshotMode ? (
                             /* Screenshot Mode: Show all images in flat layout */
                             <div className="space-y-4">
