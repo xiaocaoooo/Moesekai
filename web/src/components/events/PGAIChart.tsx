@@ -132,8 +132,7 @@ export default function PGAIChart({ globalKline, height = 300 }: PGAIChartProps)
                         // China/Japan: Red = Up, Green = Down.
                         // Western: Green = Up, Red = Down.
                         // Let's stick to standard/user preference. Project seems Chinese/Japanese context.
-                        // Web default ECharts is Red=Up (positive).
-                        color: '#ef4444',
+                        // Web default ECharts is Red=Up 
                         color0: '#22c55e', // Falling -> Green
                         borderColor: '#ef4444',
                         borderColor0: '#22c55e'
