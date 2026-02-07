@@ -37,6 +37,7 @@ const menuItems: NavItem[] = [
         children: [
             { name: "活动", href: "/events" },
             { name: "活动剧情", href: "/eventstory" },
+            { name: "活动预测", href: "/prediction" },
             { name: "扭蛋", href: "/gacha" },
             { name: "演唱会", href: "/live" },
         ]
