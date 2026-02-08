@@ -72,7 +72,8 @@ function getFallbackVersionUrl(): string {
 }
 
 // Build-time URL (for static generation - more stable for large files >3MB)
-const MASTER_BUILD_URL = "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master";
+// const MASTER_BUILD_URL = "https://raw.githubusercontent.com/Team-Haruki/haruki-sekai-master/main/master";
+const MASTER_BUILD_URL = "https://sekaimaster.exmeaning.com/master";
 
 /**
  * Detect if we're in a build/SSG context (server-side, no window)

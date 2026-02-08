@@ -148,7 +148,7 @@ export default function CardDetailPage() {
                     };
                 }
                 setCard(foundCard);
-                document.title = `Snowy SekaiViewer - ${foundCard.prefix}`;
+                // document.title = `Snowy SekaiViewer - ${foundCard.prefix}`; // Moved to metadata
 
                 // Set initial level to max
                 const maxLevelInfo = MAX_LEVELS[foundCard.cardRarityType];
@@ -1150,14 +1150,15 @@ function CostumeGrid({ costumes, assetSource }: { costumes: Costume3d[], assetSo
                 </div>
             )}
 
-            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            <div className="flex overflow-x-auto sm:grid sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {groups.map(group => (
-                    <CostumeGroupItem
-                        key={group.key}
-                        variants={group.variants}
-                        targetColorId={activeColorId}
-                        assetSource={assetSource}
-                    />
+                    <div key={group.key} className="flex-shrink-0 w-24 xs:w-28 sm:w-auto">
+                        <CostumeGroupItem
+                            variants={group.variants}
+                            targetColorId={activeColorId}
+                            assetSource={assetSource}
+                        />
+                    </div>
                 ))}
             </div>
         </div>

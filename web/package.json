@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run sitemap",
+    "build:next": "next build",
+    "sitemap": "node scripts/generate-sitemaps.mjs",
     "start": "next start",
     "lint": "eslint"
   },
