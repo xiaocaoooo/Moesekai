@@ -559,7 +559,7 @@ const CardDetail: React.FC<unknown> = observer(() => {
           );
       }
       const _eventCards = eventCardsCache.filter(
-        (elem) => elem.cardId === Number(cardId)
+        (elem) => elem.cardId === Number(cardId) && elem.isDisplayCardStory
       );
       if (_eventCards && _eventCards.length)
         setEvent(
