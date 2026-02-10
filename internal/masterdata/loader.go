@@ -150,10 +150,20 @@ func (s *Store) Fetch() error {
 
 	for _, ec := range eventCards {
 		if ev, ok := eventLookup[ec.EventID]; ok {
-			newCardEventMap[ec.CardID] = models.EventInfo{
-				ID:              ev.ID,
-				Name:            ev.Name,
-				AssetbundleName: ev.AssetbundleName,
+			if existing, exists := newCardEventMap[ec.CardID]; exists {
+				if ev.ID < existing.ID {
+					newCardEventMap[ec.CardID] = models.EventInfo{
+						ID:              ev.ID,
+						Name:            ev.Name,
+						AssetbundleName: ev.AssetbundleName,
+					}
+				}
+			} else {
+				newCardEventMap[ec.CardID] = models.EventInfo{
+					ID:              ev.ID,
+					Name:            ev.Name,
+					AssetbundleName: ev.AssetbundleName,
+				}
 			}
 		}
 	}
