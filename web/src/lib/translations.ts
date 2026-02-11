@@ -54,6 +54,11 @@ export interface TranslationData {
         unitName: TranslationMap;
         profileSentence: TranslationMap;
     };
+    costumes: {
+        name: TranslationMap;        // Costume name translations
+        colorName: TranslationMap;   // Color variant name translations
+        designer: TranslationMap;    // Designer name translations
+    };
 }
 
 // Default empty translation data
@@ -68,6 +73,7 @@ const emptyTranslationData: TranslationData = {
     comic: { title: {} },
     characters: { hobby: {}, specialSkill: {}, favoriteFood: {}, hatedFood: {}, weak: {}, introduction: {} },
     units: { unitName: {}, profileSentence: {} },
+    costumes: { name: {}, colorName: {}, designer: {} },
 };
 
 // Cache for loaded translations
@@ -95,7 +101,7 @@ export async function loadTranslations(): Promise<TranslationData> {
             const baseUrl = "/data/translations";
 
             // Load all translation files in parallel
-            const [cards, events, music, virtualLive, mysekai, gacha, sticker, comic, characters, units] = await Promise.all([
+            const [cards, events, music, virtualLive, mysekai, gacha, sticker, comic, characters, units, costumes] = await Promise.all([
                 fetchTranslationFile<TranslationData["cards"]>(`${baseUrl}/cards.json`),
                 fetchTranslationFile<TranslationData["events"]>(`${baseUrl}/events.json`),
                 fetchTranslationFile<TranslationData["music"]>(`${baseUrl}/music.json`),
@@ -106,6 +112,7 @@ export async function loadTranslations(): Promise<TranslationData> {
                 fetchTranslationFile<TranslationData["comic"]>(`${baseUrl}/comic.json`),
                 fetchTranslationFile<TranslationData["characters"]>(`${baseUrl}/characters.json`),
                 fetchTranslationFile<TranslationData["units"]>(`${baseUrl}/units.json`),
+                fetchTranslationFile<TranslationData["costumes"]>(`${baseUrl}/costumes.json`),
             ]);
 
             const result: TranslationData = {
@@ -119,6 +126,7 @@ export async function loadTranslations(): Promise<TranslationData> {
                 comic: comic ?? emptyTranslationData.comic,
                 characters: characters ?? emptyTranslationData.characters,
                 units: units ?? emptyTranslationData.units,
+                costumes: costumes ?? emptyTranslationData.costumes,
             };
 
             translationCache = result;

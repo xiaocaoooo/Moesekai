@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/MainLayout";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useTranslation } from "@/contexts/TranslationContext";
 import { getCostumeThumbnailUrl, getCharacterIconUrl, getCardThumbnailUrl } from "@/lib/assets";
 import { CHARACTER_NAMES, UNIT_DATA, ICardInfo, getRarityNumber } from "@/types/types";
+import { TranslatedText } from "@/components/common/TranslatedText";
 import {
     ICostumeInfo,
     ISnowyCostumesData,
@@ -124,6 +126,7 @@ export default function CostumeDetailClient() {
     const router = useRouter();
     const groupId = Number(params.id);
     const { assetSource } = useTheme();
+    const { t } = useTranslation();
 
     // Now groupCostumes is a single ICostumeInfo object because the JSON structure is grouped
     const [costumeGroup, setCostumeGroup] = useState<ICostumeInfo | null>(null);
@@ -162,7 +165,8 @@ export default function CostumeDetailClient() {
                 setCostumeGroup(group);
 
                 // Set page title
-                document.title = `Snowy SekaiViewer - ${group.name}`;
+                const translatedName = t("costumes", "name", group.name);
+                document.title = `Snowy SekaiViewer - ${translatedName || group.name}`;
 
                 // Fetch Related Cards if any
                 if (group.cardIds && group.cardIds.length > 0) {
@@ -411,7 +415,13 @@ export default function CostumeDetailClient() {
                         </li>
                         <li className="text-slate-300">/</li>
                         <li className="text-slate-800 font-medium truncate max-w-[200px]">
-                            {representative.name}
+                            <TranslatedText
+                                original={representative.name}
+                                category="costumes"
+                                field="name"
+                                originalClassName="truncate block"
+                                translationClassName="text-xs text-slate-400 truncate block font-normal"
+                            />
                         </li>
                     </ol>
                 </nav>
@@ -433,7 +443,13 @@ export default function CostumeDetailClient() {
                         </span>
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-black text-slate-800">
-                        {representative.name}
+                        <TranslatedText
+                            original={representative.name}
+                            category="costumes"
+                            field="name"
+                            originalClassName=""
+                            translationClassName="block text-lg font-medium text-slate-400 mt-1"
+                        />
                     </h1>
                 </div>
 
@@ -627,7 +643,7 @@ export default function CostumeDetailClient() {
                                                             unoptimized
                                                         />
                                                     </div>
-                                                    {variant.colorName}
+                                                    {t("costumes", "colorName", variant.colorName) || variant.colorName}
                                                 </button>
                                             );
                                         })}
@@ -651,7 +667,18 @@ export default function CostumeDetailClient() {
                             </div>
                             <div className="divide-y divide-slate-100">
                                 <InfoRow label="组 ID" value={`#${groupId}`} />
-                                <InfoRow label="名称" value={representative.name} />
+                                <InfoRow
+                                    label="名称"
+                                    value={
+                                        <TranslatedText
+                                            original={representative.name}
+                                            category="costumes"
+                                            field="name"
+                                            originalClassName=""
+                                            translationClassName="block text-xs font-normal text-slate-400 mt-0.5"
+                                        />
+                                    }
+                                />
                                 <InfoRow label="类型" value={representative.costume3dType} />
                                 <InfoRow label="来源" value={
                                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${representative.source === "card" ? "bg-blue-100 text-blue-600" :
@@ -672,7 +699,7 @@ export default function CostumeDetailClient() {
                                 } />
                                 <InfoRow label="性别" value={displayGender} />
                                 {representative.designer && representative.designer !== "-" && (
-                                    <InfoRow label="设计者" value={representative.designer} />
+                                    <InfoRow label="设计者" value={t("costumes", "designer", representative.designer) || representative.designer} />
                                 )}
                                 <InfoRow label="发布时间" value={
                                     mounted && representative.publishedAt

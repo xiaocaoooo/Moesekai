@@ -775,6 +775,10 @@
     "粉砕せよ！アンヴァレンタインの復讐": {
       "text": "粉碎吧！反情人节的复仇",
       "source": "llm"
+    },
+    "Path made by faith": {
+      "text": "信念之路",
+      "source": "llm"
     }
   }
 }

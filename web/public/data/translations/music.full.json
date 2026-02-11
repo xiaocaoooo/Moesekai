@@ -2531,6 +2531,34 @@
     "四角い地球を丸くする": {
       "text": "将方方的地球变圆",
       "source": "llm"
+    },
+    "ぽかぽかの星": {
+      "text": "暖洋洋的星球",
+      "source": "llm"
+    },
+    "アリア": {
+      "text": "咏叹调",
+      "source": "llm"
+    },
+    "SHIAWASE FOR YOU!": {
+      "text": "SHIAWASE FOR YOU!",
+      "source": "llm"
+    },
+    "Ribbon": {
+      "text": "Ribbon",
+      "source": "llm"
+    },
+    "アイ": {
+      "text": "爱",
+      "source": "llm"
+    },
+    "Fondant Step": {
+      "text": "Fondant Step",
+      "source": "llm"
+    },
+    "幕を下ろそう、パレードへ": {
+      "text": "落幕吧，向着巡游而去",
+      "source": "llm"
     }
   },
   "artist": {
@@ -3936,6 +3964,18 @@
     },
     "n-buna、Orangestar": {
       "text": "n-buna",
+      "source": "llm"
+    },
+    "なちぴ": {
+      "text": "なちぴ",
+      "source": "llm"
+    },
+    "海茶、多良レイト": {
+      "text": "海茶、多良レイト",
+      "source": "llm"
+    },
+    "sabio/高村風太": {
+      "text": "sabio/高村风太",
       "source": "llm"
     }
   },

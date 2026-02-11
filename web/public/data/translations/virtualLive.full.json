@@ -1739,6 +1739,18 @@
     "粉砕せよ！アンヴァレンタインの復讐 アフターライブ": {
       "text": "粉碎吧！反情人节的复仇 赛后演唱会",
       "source": "llm"
+    },
+    "HAPPY BIRTHDAYライブ 奏 2026": {
+      "text": "HAPPY BIRTHDAY演唱会 奏 2026",
+      "source": "llm"
+    },
+    "HAPPY ANNIVERSARYライブ KAITO 2026": {
+      "text": "HAPPY ANNIVERSARY演唱会 KAITO 2026",
+      "source": "llm"
+    },
+    "Path made by faith アフターライブ": {
+      "text": "Path made by faith After Live",
+      "source": "llm"
     }
   }
 }

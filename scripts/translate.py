@@ -559,6 +559,63 @@ def extract_mysekai_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List
     return cn_translations, jp_only
 
 
+def extract_costumes_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[str]]]:
+    """Extract costume translations from CN server (snowy_costumes.json)"""
+    jp_data = fetch_masterdata("snowy_costumes.json", "jp")
+    cn_data = fetch_masterdata("snowy_costumes.json", "cn")
+
+    cn_translations = {"name": {}, "colorName": {}, "designer": {}}
+    jp_only = {"name": [], "colorName": [], "designer": []}
+
+    if not jp_data:
+        return cn_translations, jp_only
+
+    jp_costumes = jp_data.get("costumes", [])
+    cn_costumes = (cn_data or {}).get("costumes", [])
+    cn_by_id = {c["id"]: c for c in cn_costumes}
+
+    for costume in jp_costumes:
+        costume_id = costume["id"]
+        cn_costume = cn_by_id.get(costume_id)
+
+        # Name
+        jp_name = costume.get("name", "")
+        if jp_name and jp_name != "-":
+            if cn_costume and cn_costume.get("name") and cn_costume["name"] != jp_name:
+                cn_translations["name"][jp_name] = cn_costume["name"]
+            else:
+                jp_only["name"].append(jp_name)
+
+        # Designer
+        jp_designer = costume.get("designer", "")
+        if jp_designer and jp_designer != "-":
+            if cn_costume and cn_costume.get("designer") and cn_costume["designer"] != jp_designer:
+                cn_translations["designer"][jp_designer] = cn_costume["designer"]
+            else:
+                jp_only["designer"].append(jp_designer)
+
+        # ColorName - iterate all parts
+        cn_parts = cn_costume.get("parts", {}) if cn_costume else {}
+        for part_type, part_list in costume.get("parts", {}).items():
+            cn_part_list = cn_parts.get(part_type, [])
+            cn_part_by_asset = {p["assetbundleName"]: p for p in cn_part_list}
+
+            for part in part_list:
+                jp_color = part.get("colorName", "")
+                if not jp_color or jp_color == "-":
+                    continue
+                cn_part = cn_part_by_asset.get(part["assetbundleName"])
+                if cn_part and cn_part.get("colorName") and cn_part["colorName"] != jp_color:
+                    cn_translations["colorName"][jp_color] = cn_part["colorName"]
+                else:
+                    jp_only["colorName"].append(jp_color)
+
+    for key in jp_only:
+        jp_only[key] = list(set(jp_only[key]))
+
+    return cn_translations, jp_only
+
+
 def extract_characters_with_cn() -> Tuple[Dict[str, Dict[str, str]], Dict[str, List[str]]]:
     """
     Extract character profile translations from CN server (characterProfiles.json).
@@ -975,7 +1032,7 @@ def main():
     parser.add_argument("--force", action="store_true", help="Overwrite existing translation files")
     parser.add_argument("--cn-only", action="store_true", help="Only use CN server translations, skip LLM")
     parser.add_argument("--llm", choices=["qwen", "gemini"], default="qwen", help="LLM to use (default: qwen)")
-    parser.add_argument("--category", choices=["cards", "events", "music", "virtualLive", "gacha", "mysekai", "sticker", "comic", "eventStory"],
+    parser.add_argument("--category", choices=["cards", "events", "music", "virtualLive", "gacha", "mysekai", "sticker", "comic", "costumes", "eventStory"],
                         help="Translate only a specific category")
     args = parser.parse_args()
     
@@ -996,9 +1053,10 @@ def main():
         "comic": extract_comic_with_cn,
         "characters": extract_characters_with_cn,
         "units": extract_units_with_cn,
+        "costumes": extract_costumes_with_cn,
     }
     
-    priority_order = ["cards", "events", "gacha", "virtualLive", "mysekai", "sticker", "comic", "characters", "units", "music"]
+    priority_order = ["cards", "events", "gacha", "virtualLive", "mysekai", "sticker", "comic", "characters", "units", "costumes", "music"]
     
     if args.category:
         if args.category == "eventStory":

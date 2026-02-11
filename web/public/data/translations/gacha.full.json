@@ -1405,7 +1405,7 @@
       "source": "cn"
     },
     "[復刻][宵崎奏]HAPPY BIRTHDAY2024ガチャ": {
-      "text": "[复刻][宵崎奏]HAPPY BIRTHDAY2025招募",
+      "text": "[回响][宵崎奏]HAPPY BIRTHDAY2025招募",
       "source": "cn"
     },
     "[復刻][宵崎奏]HAPPY BIRTHDAY2023ガチャ": {
@@ -1417,7 +1417,7 @@
       "source": "cn"
     },
     "[復刻]フォトジェニック♡バレンタインガチャ": {
-      "text": "[复刻]上镜♡情人节招募",
+      "text": "[回响]上镜♡情人节招募",
       "source": "cn"
     },
     "[KAITO]HAPPY ANNIVERSARY2025ガチャ": {
@@ -1425,7 +1425,7 @@
       "source": "cn"
     },
     "[復刻][KAITO]HAPPY ANNIVERSARY2024ガチャ": {
-      "text": "[复刻][KAITO]HAPPY ANNIVERSARY2025招募",
+      "text": "[回响][KAITO]HAPPY ANNIVERSARY2025招募",
       "source": "cn"
     },
     "[復刻][KAITO]HAPPY ANNIVERSARY2023ガチャ": {
@@ -1813,8 +1813,8 @@
       "source": "unknown"
     },
     "SEKAIでHello♡素敵な出会いガチャ": {
-      "text": "在SEKAI中Hello♡美妙的邂逅招募",
-      "source": "unknown"
+      "text": "在「SEKAI」Hello♡美妙的邂逅招募",
+      "source": "cn"
     },
     "[日野森雫]HAPPY BIRTHDAY2023ガチャ": {
       "text": "[日野森雫]HAPPY BIRTHDAY2023招募",
@@ -2534,6 +2534,34 @@
     },
     "A sweet afternoonガチャ": {
       "text": "A sweet afternoon招募",
+      "source": "llm"
+    },
+    "[復刻]SEKAIでHello♡素敵な出会いガチャ": {
+      "text": "[复刻]在SEKAI中Hello♡美好的相遇招募",
+      "source": "llm"
+    },
+    "[宵崎奏]HAPPY BIRTHDAY2026ガチャ": {
+      "text": "[宵崎奏]HAPPY BIRTHDAY 2026招募",
+      "source": "llm"
+    },
+    "[宵崎奏]HAPPY BIRTHDAYメモリーズガチャ": {
+      "text": "[宵崎奏]HAPPY BIRTHDAY 回忆招募",
+      "source": "llm"
+    },
+    "瞬きのSunny daysガチャ": {
+      "text": "瞬息的Sunny days招募",
+      "source": "llm"
+    },
+    "[復刻]Night sweet mealガチャ": {
+      "text": "[复刻]Night sweet meal招募",
+      "source": "llm"
+    },
+    "[KAITO]HAPPY ANNIVERSARY2026ガチャ": {
+      "text": "[KAITO]HAPPY ANNIVERSARY 2026招募",
+      "source": "llm"
+    },
+    "[KAITO]HAPPY ANNIVERSARYメモリーズガチャ": {
+      "text": "[KAITO]HAPPY ANNIVERSARY 回忆招募",
       "source": "llm"
     }
   }
