@@ -52,6 +52,12 @@ const menuItems: NavItem[] = [
             { name: "服装", href: "/costumes" },
         ]
     },
+    {
+        name: "工具",
+        children: [
+            { name: "表情包制作", href: "/sticker-maker" },
+        ]
+    },
     { name: "关于", href: "/about" },
 ];
 
@@ -90,7 +96,7 @@ export default function MainNavbar({ activeItem = "首页" }: MainNavbarProps) {
                     />
                     <div className="flex items-center gap-1.5 h-full">
                         <span className="text-[10px] text-miku font-bold tracking-widest uppercase leading-none mt-1">Sekai Viewer</span>
-                        <span className="text-[8px] px-1.5 py-0.5 bg-amber-400 text-white font-bold rounded-full leading-none">BETA1.93</span>
+                        <span className="text-[8px] px-1.5 py-0.5 bg-amber-400 text-white font-bold rounded-full leading-none">BETA1.94</span>
                     </div>
                 </Link>
 
