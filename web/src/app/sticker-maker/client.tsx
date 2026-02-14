@@ -600,6 +600,11 @@ export default function StickerMakerContent() {
                                                                     : 256 - Number(e.target.value),
                                                             })
                                                         }
+                                                        onPointerDown={() => {
+                                                            if (document.activeElement instanceof HTMLElement) {
+                                                                document.activeElement.blur();
+                                                            }
+                                                        }}
                                                         className="h-full accent-miku cursor-pointer w-2"
                                                         style={{
                                                             writingMode: "vertical-lr",
@@ -621,6 +626,11 @@ export default function StickerMakerContent() {
                                                     onChange={(e) =>
                                                         setPosition({ ...position, x: Number(e.target.value) })
                                                     }
+                                                    onPointerDown={() => {
+                                                        if (document.activeElement instanceof HTMLElement) {
+                                                            document.activeElement.blur();
+                                                        }
+                                                    }}
                                                     className="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-miku"
                                                 />
                                             </div>
