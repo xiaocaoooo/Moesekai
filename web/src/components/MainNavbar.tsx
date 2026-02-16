@@ -59,6 +59,7 @@ const menuItems: NavItem[] = [
             { name: "谷子盲抽", href: "/goods-gacha" },
             { name: "我是谁", href: "/guess-who" },
             { name: "组卡推荐器", href: "/deck-recommend" },
+            { name: "组卡比较器", href: "/deck-comparator" },
         ]
     },
     { name: "关于", href: "/about" },
@@ -99,7 +100,7 @@ export default function MainNavbar({ activeItem = "首页" }: MainNavbarProps) {
                     />
                     <div className="flex items-center gap-1.5 h-full">
                         <span className="text-[10px] text-miku font-bold tracking-widest uppercase leading-none mt-1">Sekai Viewer</span>
-                        <span className="text-[8px] px-1.5 py-0.5 bg-amber-400 text-white font-bold rounded-full leading-none">BETA1.103</span>
+                        <span className="text-[8px] px-1.5 py-0.5 bg-amber-400 text-white font-bold rounded-full leading-none">BETA1.104</span>
                     </div>
                 </Link>
 

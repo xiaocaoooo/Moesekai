@@ -123,11 +123,18 @@ export default function DeckRecommendClient() {
             setCardsMaster(cards);
         }).catch(console.error);
 
-        // Load saved User ID
+        // Load saved User ID and Server
         const savedUserId = localStorage.getItem("deck_recommend_userid");
+        const savedServer = localStorage.getItem("deck_recommend_server");
+
         if (savedUserId) {
             setUserId(savedUserId);
+            // Only toggle allowSaveUserId if we found a saved user ID
             setAllowSaveUserId(true);
+        }
+
+        if (savedServer && ["jp", "cn", "tw"].includes(savedServer)) {
+            setServer(savedServer as ServerType);
         }
     }, []);
 
@@ -336,8 +343,10 @@ export default function DeckRecommendClient() {
                                         setAllowSaveUserId(newState);
                                         if (newState) {
                                             localStorage.setItem("deck_recommend_userid", userId);
+                                            localStorage.setItem("deck_recommend_server", server);
                                         } else {
                                             localStorage.removeItem("deck_recommend_userid");
+                                            localStorage.removeItem("deck_recommend_server");
                                         }
                                     }}
                                     className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${allowSaveUserId ? 'bg-miku' : 'bg-slate-200'}`}
@@ -357,7 +366,12 @@ export default function DeckRecommendClient() {
                                 {SERVER_OPTIONS.map((s) => (
                                     <button
                                         key={s.value}
-                                        onClick={() => setServer(s.value)}
+                                        onClick={() => {
+                                            setServer(s.value);
+                                            if (allowSaveUserId) {
+                                                localStorage.setItem("deck_recommend_server", s.value);
+                                            }
+                                        }}
                                         className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${server === s.value
                                             ? "bg-miku text-white shadow-md shadow-miku/20"
                                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
