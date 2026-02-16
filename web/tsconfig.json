@@ -37,7 +37,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "../refer/re_sekai-calculator/src/**/*"
   ],
   "exclude": [
     "node_modules"
