@@ -1,11 +1,13 @@
 # Build Stage for Frontend
 FROM node:20-alpine AS builder-web
+RUN npm install -g npm@10.8.2
 WORKDIR /app
-COPY web/package.json web/package-lock.json ./
-RUN npm ci
-COPY web/ .
+COPY refer/re_sekai-calculator/ refer/re_sekai-calculator/
+COPY web/ web/
+WORKDIR /app/web
 # Set API URL empty to allow relative fetching
 ENV NEXT_PUBLIC_API_URL=
+RUN npm ci
 RUN npm run build
 
 # Build Stage for Backend
@@ -25,7 +27,7 @@ WORKDIR /app
 COPY --from=builder-go /app/server ./server
 
 # Copy Frontend Static Export
-COPY --from=builder-web /app/out ./dist
+COPY --from=builder-web /app/web/out ./dist
 
 # Copy Master Data
 COPY data/ ./data/
