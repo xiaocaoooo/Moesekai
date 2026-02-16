@@ -4,7 +4,7 @@ RUN npm install -g npm@10.8.2
 WORKDIR /app
 COPY refer/re_sekai-calculator/ refer/re_sekai-calculator/
 WORKDIR /app/refer/re_sekai-calculator
-RUN npm install
+RUN npm install --legacy-peer-deps
 RUN npm run build
 
 WORKDIR /app
