@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
   turbopack: {
+    root: "..",
     resolveAlias: {
       "sekai-calculator": "../refer/re_sekai-calculator/src/index.ts",
     },
