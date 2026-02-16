@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  transpilePackages: ["sekai-calculator"],
+
 };
 
 export default nextConfig;
