@@ -313,8 +313,9 @@ export function planSmartRoutes(
             const controlled = controlledRaw.filter(r => {
                 if (r.eventBonus < minEventBonus) return false;
                 if (validBonuses && validBonuses.length > 0) {
-                    // Use epsilon for float comparison if necessary, but getValidScores returns integer bonuses usually
-                    return validBonuses.includes(r.eventBonus);
+                    // Compare with 1-decimal rounding to handle float precision
+                    const rounded = Math.round(r.eventBonus * 10) / 10;
+                    return validBonuses.some(vb => Math.round(vb * 10) / 10 === rounded);
                 }
                 return true;
             });
