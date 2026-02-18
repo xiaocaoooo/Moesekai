@@ -111,6 +111,7 @@ export class DeckCalculator {
     const cards = cardsPrepare.map((it, i) => {
       const { cardDetail, skillPrepare } = it
       let scoreUp = skillPrepare.scoreUpFixed
+      let isReferenceSkill = false
       // 针对吸技能的情况特殊计算
       if (skillPrepare.scoreUpReference !== undefined) {
         // 计算其他卡中最高的被吸技能效果
@@ -122,6 +123,9 @@ export class DeckCalculator {
         // 按比例吸技能，并更新结果
         let newScoreUp = scoreUpReference.base + Math.floor(otherCardSkillMax * scoreUpReference.rate / 100)
         newScoreUp = Math.min(newScoreUp, scoreUpReference.max) // 有上限
+        if (newScoreUp > scoreUp) {
+          isReferenceSkill = true // 吸技能（觉醒前）效果更优
+        }
         scoreUp = Math.max(scoreUp, newScoreUp) // 取最高
       }
       return {
@@ -133,7 +137,8 @@ export class DeckCalculator {
         eventBonus: cardDetail.eventBonus?.getBonusForDisplay(i === 0),
         skill: {
           scoreUp,
-          lifeRecovery: skillPrepare.lifeRecovery
+          lifeRecovery: skillPrepare.lifeRecovery,
+          isReferenceSkill: isReferenceSkill || undefined
         }
       }
     })
@@ -231,4 +236,9 @@ export interface DeckCardSkillDetail {
    */
   scoreUp: number
   lifeRecovery: number
+  /**
+   * 是否使用了吸技能（觉醒前技能）
+   * true表示该卡使用的是花前（觉醒前）的吸技能效果
+   */
+  isReferenceSkill?: boolean
 }

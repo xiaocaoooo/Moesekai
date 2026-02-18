@@ -803,7 +803,8 @@ function DeckResultRow({
                         const isBirthday = rarityType === "rarity_birthday";
                         const masterRank = userCard?.masterRank ?? card.masterRank ?? 0;
                         const level = userCard?.level ?? card.level ?? 1;
-                        const showTrained = (rarityType === "rarity_3" || rarityType === "rarity_4") && !isBirthday;
+                        const isRefSkill = card.skill?.isReferenceSkill === true;
+                        const showTrained = (rarityType === "rarity_3" || rarityType === "rarity_4") && !isBirthday && !isRefSkill;
 
                         if (!masterCard) {
                             return (
@@ -904,7 +905,10 @@ function DeckResultRow({
                                                 {basePower.toLocaleString()}
                                             </td>
                                             <td className="py-1.5 px-1 text-right text-miku font-bold">
-                                                {card.skill?.scoreUp || 0}%
+                                                <span>{card.skill?.scoreUp || 0}%</span>
+                                                {card.skill?.isReferenceSkill && (
+                                                    <span className="ml-1 text-[9px] font-medium text-amber-500 bg-amber-50 px-1 py-[1px] rounded" title="该卡使用觉醒前（花前）吸技能效果">花前</span>
+                                                )}
                                             </td>
                                             {mode === "event" && (
                                                 <td className="py-1.5 px-1 text-right font-bold text-amber-600">

@@ -92,7 +92,7 @@ export class CardSkillCalculator {
     if (detail.scoreUpDifferentUnit !== undefined) {
       for (const [key, value] of detail.scoreUpDifferentUnit) {
         let current = scoreUpSelfFixed + value
-        current = Math.min(current, scoreUpSelfFixed) // 强制封顶
+        current = Math.min(current, scoreUpLimit) // 强制封顶
         if (current > maxScoreUpBasic) {
           // 只有在高于觉醒后技能的情况下才考虑
           // 不然默认回落到觉醒后技能
