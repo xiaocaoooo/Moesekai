@@ -12,6 +12,15 @@ import { filterCardPriority } from '../card-priority/card-priority-filter'
 import { isDeckAttrLessThan3, toRecommendDeck, updateDeck } from './deck-result-update'
 import { AreaItemService } from '../area-item-information/area-item-service'
 import { type EventConfig, EventType } from '../event-point/event-service'
+import { findBestCardsGA, type GAConfig } from './find-best-cards-ga'
+
+/** 推荐算法类型 */
+export enum RecommendAlgorithm {
+  /** 深度优先搜索（精确但慢） */
+  DFS = 'dfs',
+  /** 遗传算法（快速近似） */
+  GA = 'ga'
+}
 
 export class BaseDeckRecommend {
   private readonly cardCalculator: CardCalculator
@@ -25,28 +34,22 @@ export class BaseDeckRecommend {
   }
 
   /**
-   * 使用递归寻找最佳卡组
+   * 使用递归寻找最佳卡组（DFS）
    * 栈深度不超过member+1层
-   * 复杂度O(n^member)，带大量剪枝
-   * （按分数高到低排序）
-   * @param cardDetails 参与计算的卡牌
-   * @param allCards 全部卡牌（按支援卡组加成排序）
-   * @param scoreFunc 获得分数的公式
-   * @param limit 需要推荐的卡组数量（按分数高到低）
-   * @param isChallengeLive 是否挑战Live（人员可重复）
-   * @param member 人数限制（2-5、默认5）
-   * @param leaderCharacter C位角色ID
-   * @param honorBonus 称号加成
-   * @param eventConfig 活动信息
-   * @param deckCards 计算过程中的当前卡组
-   * @private
+   * 复杂度O(n^member)，带大量剪枝和超时控制
    */
-  private static findBestCards (
+  private static findBestCardsDFS (
     cardDetails: CardDetail[], allCards: CardDetail[], scoreFunc: (deckDetail: DeckDetail) => number, limit: number = 1,
     isChallengeLive: boolean = false, member: number = 5, leaderCharacter: number = 0, honorBonus: number = 0,
     eventConfig: EventConfig = {},
-    deckCards: CardDetail[] = []
+    deckCards: CardDetail[] = [],
+    dfsState?: DFSState
   ): RecommendDeck[] {
+    // 超时检查
+    if (dfsState !== undefined && dfsState.isTimeout()) {
+      return dfsState.bestDecks
+    }
+
     // 防止挑战Live卡的数量小于允许上场的数量导致无法组队
     if (isChallengeLive) {
       member = Math.min(member, cardDetails.length)
@@ -58,6 +61,16 @@ export class BaseDeckRecommend {
         eventConfig.worldBloomDifferentAttributeBonuses
       )
       const score = scoreFunc(deckDetail)
+
+      // 检查 hash 缓存
+      if (dfsState !== undefined) {
+        const hash = BaseDeckRecommend.calcDeckHash(deckCards)
+        if (dfsState.deckHashCache.has(hash)) {
+          return dfsState.bestDecks
+        }
+        dfsState.deckHashCache.add(hash)
+      }
+
       // 如果固定leader，不检查技能效果直接返回
       if (leaderCharacter > 0) {
         return toRecommendDeck(deckDetail, score)
@@ -72,20 +85,25 @@ export class BaseDeckRecommend {
           bestScoreIndex = i
         }
       })
-      // 如果现在C位已经对了（加分技能最高的卡牌在C位）
+      // 如果现在C位已经对了
       if (bestScoreIndex === 0) {
         return toRecommendDeck(deckDetail, score)
       }
       // 不然就重新算调整过C位后的分数
       swap(deckCards, 0, bestScoreIndex)
-      return BaseDeckRecommend.findBestCards(
+      return BaseDeckRecommend.findBestCardsDFS(
         cardDetails, allCards, scoreFunc, limit, isChallengeLive, member, leaderCharacter, honorBonus,
-        eventConfig, deckCards)
+        eventConfig, deckCards, dfsState)
     }
     // 非完整卡组，继续遍历所有情况
     let ans: RecommendDeck[] = []
     let preCard: CardDetail | null = null
     for (const card of cardDetails) {
+      // 超时检查
+      if (dfsState !== undefined && dfsState.isTimeout()) {
+        return ans.length > 0 ? ans : dfsState.bestDecks
+      }
+
       // 跳过已经重复出现过的卡牌
       if (deckCards.some(it => it.cardId === card.cardId)) {
         continue
@@ -99,7 +117,6 @@ export class BaseDeckRecommend {
         continue
       }
       // C位一定是技能最好的卡牌，跳过技能比C位还好的
-      // 如果固定leader，这边不能跳过
       if (leaderCharacter <= 0 && deckCards.length >= 1 && deckCards[0].skill.isCertainlyLessThen(card.skill)) {
         continue
       }
@@ -112,7 +129,6 @@ export class BaseDeckRecommend {
         continue
       }
       // 要求生成的卡组后面4个位置按强弱排序、同强度按卡牌ID排序
-      // 如果上一张卡肯定小，那就不符合顺序；在旗鼓相当的前提下（因为两两组合有四种情况，再排除掉这张卡肯定小的情况，就是旗鼓相当），要ID大
       if (deckCards.length >= 2 && CardCalculator.isCertainlyLessThan(deckCards[deckCards.length - 1], card)) {
         continue
       }
@@ -120,15 +136,15 @@ export class BaseDeckRecommend {
         card.cardId < deckCards[deckCards.length - 1].cardId) {
         continue
       }
-      // 如果肯定比上一次选定的卡牌要弱，那么舍去，让这张卡去后面再选
+      // 如果肯定比上一次选定的卡牌要弱，那么舍去
       if (preCard !== null && CardCalculator.isCertainlyLessThan(card, preCard)) {
         continue
       }
       preCard = card
-      // 递归，寻找所有情况
-      const result = BaseDeckRecommend.findBestCards(
+      // 递归
+      const result = BaseDeckRecommend.findBestCardsDFS(
         cardDetails, allCards, scoreFunc, limit, isChallengeLive, member, leaderCharacter, honorBonus,
-        eventConfig, [...deckCards, card])
+        eventConfig, [...deckCards, card], dfsState)
       ans = updateDeck(ans, result, limit)
     }
     // 在最外层检查一下是否成功组队
@@ -136,23 +152,24 @@ export class BaseDeckRecommend {
       console.warn(`Cannot find deck in ${cardDetails.length} cards(${cardDetails.map(it => it.cardId).toString()})`)
       return []
     }
-
-    // 按分数从高到低排序、限制数量
     return ans
+  }
+
+  /** 计算卡组哈希（用于去重缓存） */
+  private static calcDeckHash (deckCards: CardDetail[]): number {
+    if (deckCards.length === 0) return 0
+    const ids = deckCards.map(c => c.cardId)
+    const sorted = ids.slice(1).sort((a, b) => a - b)
+    const BASE = 10007
+    let hash = ids[0]
+    for (const id of sorted) {
+      hash = ((hash * BASE) + id) | 0
+    }
+    return hash >>> 0
   }
 
   /**
    * 推荐高分卡组
-   * @param userCards 参与推荐的卡牌
-   * @param scoreFunc 分数计算公式
-   * @param musicMeta 歌曲信息
-   * @param limit 需要推荐的卡组数量（按分数高到低）
-   * @param member 限制人数（2-5、默认5）
-   * @param leaderCharacter C位角色ID（可选）
-   * @param cardConfig 卡牌设置
-   * @param debugLog 测试日志处理函数
-   * @param liveType Live类型
-   * @param eventConfig 活动配置
    */
   public async recommendHighScoreDeck (
     userCards: UserCard[], scoreFunc: ScoreFunction,
@@ -163,30 +180,29 @@ export class BaseDeckRecommend {
       leaderCharacter = undefined,
       cardConfig = {},
       debugLog = (_: string) => {
-      }
+      },
+      algorithm = RecommendAlgorithm.GA,
+      gaConfig = {},
+      timeoutMs = 30000
     }: DeckRecommendConfig,
     liveType: LiveType,
     eventConfig: EventConfig = {}
   ): Promise<RecommendDeck[]> {
     const { eventType = EventType.NONE, eventUnit, specialCharacterId, worldBloomType, worldBloomSupportUnit } = eventConfig
     const honorBonus = await this.deckCalculator.getHonorBonusPower()
-    // 用于计算的卡（主队伍+应援队伍）
     const areaItemLevels = await this.areaItemService.getAreaItemLevels()
     let cards =
         await this.cardCalculator.batchGetCardDetail(userCards, cardConfig, eventConfig, areaItemLevels)
-    // 过滤箱活的卡，不上其它组合的
-    // 因为World Link应援队伍只能从指定组合选，这里照样可以过滤不影响结果
+
+    // 过滤箱活的卡
     let filterUnit = eventUnit
     if (worldBloomSupportUnit !== undefined) {
-      // World Link活动，无论主卡组还是应援卡组，都要跟着应援角色组合走
-      // 普通World Link活动两者本来就一致，Final为混活（eventUnit为空），此处强制覆盖
       filterUnit = worldBloomSupportUnit
     }
     if (filterUnit !== undefined) {
       const originCardsLength = cards.length
       cards = cards.filter(it =>
         (it.units.length === 1 && it.units[0] === 'piapro') ||
-          // 因为filterUnit是一个可变量，这里还需要再次判断（实际无效），不然编译会有问题
           filterUnit === undefined || it.units.includes(filterUnit))
       debugLog(`Cards filtered with unit ${filterUnit}: ${cards.length}/${originCardsLength}`)
       debugLog(cards.map(it => it.cardId).toString())
@@ -196,24 +212,90 @@ export class BaseDeckRecommend {
       leaderCharacter = specialCharacterId
     }
 
-    // 为了优化性能，会根据活动加成和卡牌稀有度优先级筛选卡牌
+    const startTime = Date.now()
+    const isTimeout = (): boolean => Date.now() - startTime > timeoutMs
+
+    // 如果使用 GA 算法
+    if (algorithm === RecommendAlgorithm.GA) {
+      debugLog(`Using GA algorithm with ${cards.length} cards`)
+
+      // GA 不需要 filterCardPriority，直接用全部卡牌
+      const gaResult = findBestCardsGA(
+        cards, cards, scoreFunc, musicMeta, limit,
+        liveType === LiveType.CHALLENGE, member, honorBonus, eventConfig,
+        { ...gaConfig, timeoutMs: Math.max(1000, timeoutMs - (Date.now() - startTime)) }
+      )
+
+      if (gaResult.length >= limit) {
+        debugLog(`GA found ${gaResult.length} deck(s)`)
+        return gaResult
+      }
+
+      // GA 结果不足，fallback 到 DFS
+      debugLog(`GA found ${gaResult.length} deck(s), falling back to DFS`)
+      if (isTimeout()) return gaResult
+
+      // 用 DFS 补充
+      let preCardDetails = [] as CardDetail[]
+      while (!isTimeout()) {
+        const cardDetails =
+            filterCardPriority(liveType, eventType, cards, preCardDetails, member, leaderCharacter)
+        if (cardDetails.length === preCardDetails.length) {
+          return gaResult.length > 0 ? gaResult : []
+        }
+        preCardDetails = cardDetails
+        const cards0 = cardDetails.sort((a, b) => a.cardId - b.cardId)
+        debugLog(`DFS fallback with ${cards0.length}/${cards.length} cards`)
+
+        const dfsState = new DFSState(Math.max(1000, timeoutMs - (Date.now() - startTime)))
+        const recommend = BaseDeckRecommend.findBestCardsDFS(cards0, cards,
+          deckDetail => scoreFunc(musicMeta, deckDetail), limit, liveType === LiveType.CHALLENGE, member,
+          leaderCharacter, honorBonus, eventConfig, [], dfsState)
+
+        // 合并 GA 和 DFS 结果
+        const merged = updateDeck(gaResult, recommend, limit)
+        if (merged.length >= limit) return merged
+      }
+      return gaResult
+    }
+
+    // DFS 算法（原始逻辑 + 超时控制）
     let preCardDetails = [] as CardDetail[]
-    while (true) {
+    while (!isTimeout()) {
       const cardDetails =
           filterCardPriority(liveType, eventType, cards, preCardDetails, member, leaderCharacter)
       if (cardDetails.length === preCardDetails.length) {
-        // 如果所有卡牌都上阵了还是组不出队伍，就报错
         throw new Error(`Cannot recommend any deck in ${cards.length} cards`)
       }
       preCardDetails = cardDetails
       const cards0 = cardDetails.sort((a, b) => a.cardId - b.cardId)
-      debugLog(`Recommend deck with ${cards0.length}/${cards.length} cards `)
+      debugLog(`Recommend deck with ${cards0.length}/${cards.length} cards`)
       debugLog(cards0.map(it => it.cardId).toString())
-      const recommend = BaseDeckRecommend.findBestCards(cards0, cards,
+
+      const dfsState = new DFSState(Math.max(1000, timeoutMs - (Date.now() - startTime)))
+      const recommend = BaseDeckRecommend.findBestCardsDFS(cards0, cards,
         deckDetail => scoreFunc(musicMeta, deckDetail), limit, liveType === LiveType.CHALLENGE, member,
-        leaderCharacter, honorBonus, eventConfig)
+        leaderCharacter, honorBonus, eventConfig, [], dfsState)
       if (recommend.length >= limit) return recommend
     }
+    throw new Error(`Timeout: Cannot recommend deck in ${timeoutMs}ms`)
+  }
+}
+
+/** DFS 状态管理（超时 + hash 缓存） */
+class DFSState {
+  public readonly deckHashCache = new Set<number>()
+  public bestDecks: RecommendDeck[] = []
+  private readonly startTime: number
+  private readonly timeoutMs: number
+
+  constructor (timeoutMs: number = 30000) {
+    this.startTime = Date.now()
+    this.timeoutMs = timeoutMs
+  }
+
+  public isTimeout (): boolean {
+    return Date.now() - this.startTime > this.timeoutMs
   }
 }
 
@@ -224,30 +306,16 @@ export interface RecommendDeck extends DeckDetail {
 }
 
 export interface DeckRecommendConfig {
-  /**
-   * 歌曲信息
-   */
   musicMeta: MusicMeta
-  /**
-   * 需要推荐的卡组数量（按分数高到低）
-   */
   limit?: number
-  /**
-   * 限制人数（2-5、默认5）
-   */
   member?: number
-  /**
-   * C位角色ID
-   */
   leaderCharacter?: number
-  /**
-   * 卡牌设置
-   * key为各个稀有度
-   */
   cardConfig?: Record<string, CardConfig>
-  /**
-   * 处理测试日志的函数
-   * @param str 日志内容
-   */
   debugLog?: (str: string) => void
+  /** 推荐算法，默认 GA */
+  algorithm?: RecommendAlgorithm
+  /** GA 算法配置 */
+  gaConfig?: GAConfig
+  /** 超时时间（毫秒），默认 30 秒 */
+  timeoutMs?: number
 }

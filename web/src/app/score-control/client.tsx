@@ -395,7 +395,9 @@ export default function ScoreControlClient() {
             }
 
             // Split bonus range into N chunks for parallel workers
-            const concurrency = Math.min(navigator.hardwareConcurrency || 4, 4);
+            // Mobile devices default to single thread for stability
+            const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const concurrency = isMobile ? 1 : Math.min(navigator.hardwareConcurrency || 4, 4);
             const range = bonusMax - bonusMin;
             const chunkSize = Math.max(1, Math.ceil(range / concurrency));
             const chunks: { min: number; max: number }[] = [];
@@ -600,7 +602,8 @@ export default function ScoreControlClient() {
         const collected: InfiniteSongResult[] = [];
         let totalChecked = 0;
         let taskIdx = 0;
-        const poolSize = Math.min(navigator.hardwareConcurrency || 4, 4);
+        const isMobileInf = typeof window !== 'undefined' && /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const poolSize = isMobileInf ? 1 : Math.min(navigator.hardwareConcurrency || 4, 4);
 
         // Start fake progress for the step
         startFakeProgress(setInfiniteStepProgress, infiniteStepTimerRef);
@@ -898,34 +901,15 @@ export default function ScoreControlClient() {
                                 </p>
                             )}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">难度</label>
-                            <div className="flex flex-wrap gap-2">
-                                {DIFFICULTY_OPTIONS.map((d) => {
-                                    let activeClass = "";
-                                    switch (d.value) {
-                                        case "easy": activeClass = "bg-blue-500 text-white shadow-blue-500/20"; break;
-                                        case "normal": activeClass = "bg-emerald-500 text-white shadow-emerald-500/20"; break;
-                                        case "hard": activeClass = "bg-orange-500 text-white shadow-orange-500/20"; break;
-                                        case "expert": activeClass = "bg-red-500 text-white shadow-red-500/20"; break;
-                                        case "master": activeClass = "bg-purple-500 text-white shadow-purple-500/20"; break;
-                                        case "append": activeClass = "bg-fuchsia-500 text-white shadow-fuchsia-500/20"; break;
-                                        default: activeClass = "bg-miku text-white shadow-miku/20";
-                                    }
-                                    return (
-                                        <button
-                                            key={d.value}
-                                            onClick={() => setDifficulty(d.value)}
-                                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all shadow-md ${difficulty === d.value
-                                                ? activeClass
-                                                : "bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-none"
-                                                }`}
-                                        >
-                                            {d.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                        <div className="flex items-end pb-2">
+                            <p className="text-xs text-slate-400">
+                                <span className="inline-flex items-center gap-1">
+                                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    难度选择不影响控分结果
+                                </span>
+                            </p>
                         </div>
                     </div>
 
@@ -1621,6 +1605,12 @@ export default function ScoreControlClient() {
 
                 {/* Footer */}
                 <div className="mt-12 text-center text-xs text-slate-400">
+                    <p className="mb-1">
+                        组卡代码采用xfl03(33)的 <ExternalLink href="https://github.com/xfl03/sekai-calculator" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-miku hover:underline">sekai-calculator</ExternalLink>
+                    </p>
+                    <p className="mb-1">
+                        部分算法优化修改于 <ExternalLink href="https://github.com/NeuraXmy/sekai-deck-recommend-cpp" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-miku hover:underline">sekai-deck-recommend-cpp</ExternalLink>（作者: luna茶）
+                    </p>
                     <p>控分公式参考自社区，计算结果仅供参考</p>
                 </div>
             </div>

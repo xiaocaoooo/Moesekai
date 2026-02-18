@@ -711,6 +711,9 @@ export default function DeckRecommendClient() {
                     <p className="mb-1">
                         组卡推荐器源代码采用xfl03(33)的 <ExternalLink href="https://github.com/xfl03/sekai-calculator" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-miku hover:underline">sekai-calculator</ExternalLink>
                     </p>
+                    <p className="mb-1">
+                        部分算法优化修改于 <ExternalLink href="https://github.com/NeuraXmy/sekai-deck-recommend-cpp" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-miku hover:underline">sekai-deck-recommend-cpp</ExternalLink>（作者: luna茶）
+                    </p>
                     <p>
                         sekai-calculator采用 LGPL-2.1 开源协议 计算结果仅供参考
                     </p>

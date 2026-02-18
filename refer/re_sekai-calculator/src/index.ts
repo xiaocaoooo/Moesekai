@@ -25,6 +25,7 @@ export * from './deck-recommend/bloom-support-deck-recommend'
 export * from './deck-recommend/challenge-live-deck-recommend'
 export * from './deck-recommend/event-deck-recommend'
 export * from './deck-recommend/event-bonus-deck-recommend'
+export * from './deck-recommend/find-best-cards-ga'
 export * from './music-recommend/music-recommend'
 
 // Common struct

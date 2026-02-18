@@ -1,6 +1,9 @@
 /**
  * 控分计算器 — 核心逻辑
  *
+ * 组卡代码来源: sekai-calculator (https://github.com/pjsek-ai/sekai-calculator)
+ * 部分算法优化修改于: https://github.com/NeuraXmy/sekai-deck-recommend-cpp  作者: luna茶
+ *
  * 公式:
  *   活动PT = int(scaled_score × event_rate / 100) × boost_multiplier
  *

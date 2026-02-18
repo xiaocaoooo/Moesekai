@@ -18,6 +18,7 @@ Sekai Viewer is licensed under **GPLv3**.
 [sekai-calculator](https://github.com/xfl03/sekai-calculator) 项目提供的组卡算法支持
 sekai-calculator 采用 **LGPL-2.1** 开源协议。
 
+项目算法也参考了**Luna茶**的相关组卡代码实现[sekai-deck-recommend-cpp](https://github.com/NeuraXmy/sekai-deck-recommend-cpp)
 ## 免责声明 / Disclaimer
 
 **本项目包含大量由人工智能（AI）辅助生成的代码。**
