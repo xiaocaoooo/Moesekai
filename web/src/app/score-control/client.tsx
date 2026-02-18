@@ -180,6 +180,48 @@ export default function ScoreControlClient() {
 
     const dbWorkerRef = useRef<Worker | null>(null);
 
+    // Fake progress bar state for deck builder
+    const [dbFakeProgress, setDbFakeProgress] = useState<number>(0);
+    const dbFakeProgressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Fake progress for infinite search per-step
+    const [infiniteStepProgress, setInfiniteStepProgress] = useState<number>(0);
+    const infiniteStepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    /** Start a fake progress animation that asymptotically approaches ~90% */
+    const startFakeProgress = useCallback((
+        setter: React.Dispatch<React.SetStateAction<number>>,
+        timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>,
+    ) => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setter(0);
+        const startTime = Date.now();
+        timerRef.current = setInterval(() => {
+            const elapsed = (Date.now() - startTime) / 1000; // seconds
+            // Asymptotic curve: approaches 90% over ~30s
+            const progress = 90 * (1 - Math.exp(-elapsed / 12));
+            setter(Math.min(90, progress));
+        }, 200);
+    }, []);
+
+    /** Stop fake progress and jump to 100% (or reset to 0) */
+    const stopFakeProgress = useCallback((
+        setter: React.Dispatch<React.SetStateAction<number>>,
+        timerRef: React.MutableRefObject<ReturnType<typeof setInterval> | null>,
+        complete: boolean = true,
+    ) => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+        if (complete) {
+            setter(100);
+            setTimeout(() => setter(0), 600);
+        } else {
+            setter(0);
+        }
+    }, []);
+
     // ====== Infinite Song Search State ======
     const [infiniteSearchEnabled, setInfiniteSearchEnabled] = useState(false);
     const [infiniteSearchRunning, setInfiniteSearchRunning] = useState(false);
@@ -306,7 +348,7 @@ export default function ScoreControlClient() {
             }, 10);
         }
 
-        // === Deck Builder: start worker if enabled ===
+        // === Deck Builder: start multi-worker if enabled ===
         if (deckBuilderEnabled) {
             if (!dbUserId.trim()) {
                 setDbError("请输入用户ID");
@@ -325,6 +367,9 @@ export default function ScoreControlClient() {
             setDbUploadTime(null);
             setDbIsCalculating(true);
 
+            // Start fake progress
+            startFakeProgress(setDbFakeProgress, dbFakeProgressTimerRef);
+
             // Build card config
             const configForCalc: Record<string, any> = {};
             for (const [key, val] of Object.entries(dbCardConfig)) {
@@ -340,108 +385,162 @@ export default function ScoreControlClient() {
                 }
             }
 
-            // Pass the user's bonus range directly to the deck builder
             const bonusMin = Math.max(0, minBonus);
             const bonusMax = Math.min(415, maxBonus);
 
+            // Terminate any existing worker
             if (dbWorkerRef.current) {
                 dbWorkerRef.current.terminate();
+                dbWorkerRef.current = null;
             }
 
-            const worker = new Worker(
-                new URL("@/lib/deck-recommend/deck-builder-worker.ts", import.meta.url)
-            );
-            dbWorkerRef.current = worker;
+            // Split bonus range into N chunks for parallel workers
+            const concurrency = Math.min(navigator.hardwareConcurrency || 4, 4);
+            const range = bonusMax - bonusMin;
+            const chunkSize = Math.max(1, Math.ceil(range / concurrency));
+            const chunks: { min: number; max: number }[] = [];
+            for (let i = 0; i < concurrency; i++) {
+                const cMin = bonusMin + i * chunkSize;
+                const cMax = Math.min(bonusMax, bonusMin + (i + 1) * chunkSize - 1);
+                if (cMin <= bonusMax) chunks.push({ min: cMin, max: cMax });
+            }
 
-            worker.onmessage = (event) => {
-                const data = event.data;
-                if (data.error) {
-                    setDbError(getErrorMessage(data.error));
-                    // When deck builder fails, fall back to non-deck routes
-                    try {
-                        const bonusMin = Math.max(0, minBonus);
-                        const bonusMax = Math.min(415, maxBonus);
-                        const routes = planSmartRoutes(
-                            targetPT, selectedEventRate!, bonusMin, bonusMax, 3000000, 10, 20,
-                        );
-                        setSmartRoutes(routes);
-                        if (routes.length > 0) {
-                            setExpandedRoute(0);
-                        } else {
-                            const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
-                            const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
-                            setFallbackResults(groupByBoost(filtered));
-                            setFallbackCount(filtered.length);
-                        }
-                    } catch (_) { /* ignore */ }
-                } else {
-                    const results = data.result || [];
-                    setDbResults(results);
-                    if (data.userCards) setDbUserCards(data.userCards);
-                    setDbDuration(data.duration || null);
-                    if (data.upload_time) setDbUploadTime(data.upload_time);
+            const startTime = performance.now();
+            let completedCount = 0;
+            let hasError = false;
+            const allResults: any[] = [];
+            let firstUserCards: any[] | null = null;
+            let firstUploadTime: number | undefined;
+            const workers: Worker[] = [];
 
-                    // Re-plan smart routes using ONLY the bonuses we found
-                    if (results.length > 0) {
-                        const foundBonuses = Array.from(new Set<number>(results.map((r: any) => {
-                            const bonus = r.eventBonus ?? (r.score || 0);
-                            return Math.round((typeof bonus === 'number' ? bonus : 0) * 10) / 10;
-                        })));
+            const onAllDone = () => {
+                const duration = performance.now() - startTime;
+                stopFakeProgress(setDbFakeProgress, dbFakeProgressTimerRef, true);
 
-                        // Recalculate routes with valid bonuses
-                        const newRoutes = planSmartRoutes(
-                            targetPT, selectedEventRate!, Math.max(0, minBonus), Math.min(415, maxBonus), 100000, 10, 20,
-                            foundBonuses
-                        );
-                        setSmartRoutes(newRoutes);
-                        if (newRoutes.length > 0) {
-                            setExpandedRoute(0);
-                        } else {
-                            // No routes with deck bonuses, show fallback
-                            const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
-                            const bonusMin = Math.max(0, minBonus);
-                            const bonusMax = Math.min(415, maxBonus);
-                            const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
-                            setFallbackResults(groupByBoost(filtered));
-                            setFallbackCount(filtered.length);
-                        }
-                    } else {
-                        // If no decks found, clear smart routes to avoid showing impossible plans
-                        setSmartRoutes([]);
+                // Merge results, deduplicate by eventBonus
+                const seen = new Set<number>();
+                const merged: any[] = [];
+                for (const r of allResults) {
+                    const bonus = r.eventBonus ?? (r.score || 0);
+                    const key = Math.round(bonus * 10) / 10;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        merged.push(r);
                     }
                 }
+
+                setDbResults(merged);
+                if (firstUserCards) setDbUserCards(firstUserCards);
+                setDbDuration(duration);
+                if (firstUploadTime) setDbUploadTime(firstUploadTime);
+
+                // Re-plan smart routes
+                if (merged.length > 0) {
+                    const foundBonuses = Array.from(new Set<number>(merged.map((r: any) => {
+                        const bonus = r.eventBonus ?? (r.score || 0);
+                        return Math.round((typeof bonus === 'number' ? bonus : 0) * 10) / 10;
+                    })));
+                    const newRoutes = planSmartRoutes(
+                        targetPT, selectedEventRate!, bonusMin, bonusMax, 100000, 10, 20, foundBonuses
+                    );
+                    setSmartRoutes(newRoutes);
+                    if (newRoutes.length > 0) {
+                        setExpandedRoute(0);
+                    } else {
+                        const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
+                        const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
+                        setFallbackResults(groupByBoost(filtered));
+                        setFallbackCount(filtered.length);
+                    }
+                } else {
+                    setSmartRoutes([]);
+                }
+
                 setIsCalculating(false);
                 setDbIsCalculating(false);
-                worker.terminate();
-                dbWorkerRef.current = null;
+                workers.forEach(w => w.terminate());
             };
 
-            worker.onerror = (err) => {
-                setDbError(`Worker 错误: ${err.message}`);
-                setIsCalculating(false);
-                setDbIsCalculating(false);
-                worker.terminate();
-                dbWorkerRef.current = null;
-            };
+            for (const chunk of chunks) {
+                const w = new Worker(
+                    new URL("@/lib/deck-recommend/deck-builder-worker.ts", import.meta.url)
+                );
+                workers.push(w);
 
-            worker.postMessage({
-                args: {
-                    userId: dbUserId.trim(),
-                    server: dbServer,
-                    eventId: parseInt(dbEventId),
-                    minBonus: bonusMin,
-                    maxBonus: bonusMax,
-                    liveType: dbLiveType,
-                    musicId: parseInt(musicId),
-                    difficulty,
-                    supportCharacterId: dbSupportCharacterId || undefined,
-                    cardConfig: configForCalc,
-                },
-            });
+                w.onmessage = (event) => {
+                    const data = event.data;
+                    completedCount++;
+
+                    if (data.error) {
+                        if (!hasError) {
+                            hasError = true;
+                            setDbError(getErrorMessage(data.error));
+                            // Fallback routes
+                            try {
+                                const routes = planSmartRoutes(
+                                    targetPT, selectedEventRate!, bonusMin, bonusMax, 3000000, 10, 20,
+                                );
+                                setSmartRoutes(routes);
+                                if (routes.length > 0) setExpandedRoute(0);
+                                else {
+                                    const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
+                                    const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
+                                    setFallbackResults(groupByBoost(filtered));
+                                    setFallbackCount(filtered.length);
+                                }
+                            } catch (_) { /* ignore */ }
+                        }
+                    } else {
+                        const results = data.result || [];
+                        allResults.push(...results);
+                        if (!firstUserCards && data.userCards) firstUserCards = data.userCards;
+                        if (!firstUploadTime && data.upload_time) firstUploadTime = data.upload_time;
+                    }
+
+                    if (completedCount >= chunks.length) {
+                        if (!hasError) onAllDone();
+                        else {
+                            stopFakeProgress(setDbFakeProgress, dbFakeProgressTimerRef, false);
+                            setIsCalculating(false);
+                            setDbIsCalculating(false);
+                            workers.forEach(wk => wk.terminate());
+                        }
+                    }
+                };
+
+                w.onerror = (err) => {
+                    completedCount++;
+                    if (!hasError) {
+                        hasError = true;
+                        setDbError(`Worker 错误: ${err.message}`);
+                    }
+                    if (completedCount >= chunks.length) {
+                        stopFakeProgress(setDbFakeProgress, dbFakeProgressTimerRef, false);
+                        setIsCalculating(false);
+                        setDbIsCalculating(false);
+                        workers.forEach(wk => wk.terminate());
+                    }
+                };
+
+                w.postMessage({
+                    args: {
+                        userId: dbUserId.trim(),
+                        server: dbServer,
+                        eventId: parseInt(dbEventId),
+                        minBonus: chunk.min,
+                        maxBonus: chunk.max,
+                        liveType: dbLiveType,
+                        musicId: parseInt(musicId),
+                        difficulty,
+                        supportCharacterId: dbSupportCharacterId || undefined,
+                        cardConfig: configForCalc,
+                    },
+                });
+            }
         }
     }, [selectedEventRate, targetPT, minBonus, maxBonus, deckBuilderEnabled, dbUserId, dbServer, dbEventId, dbLiveType, dbSupportCharacterId, musicId, difficulty, dbCardConfig, smartRoutes, infiniteSearchEnabled]);
 
-    // ====== Infinite Song Search Logic ======
+    // ====== Infinite Song Search Logic (Concurrent Worker Pool) ======
     const handleInfiniteSearch = useCallback(async () => {
         if (!musicMetas.length || !musics.length) return;
         if (!dbUserId.trim()) { setDbError("请输入用户ID"); return; }
@@ -453,6 +552,7 @@ export default function ScoreControlClient() {
         setInfiniteSearchResults([]);
         setInfiniteSearchProgress({ currentRate: VALID_EVENT_RATES[0], totalChecked: 0, found: 0, currentSongTitle: "" });
         setInfiniteExpandedIdx(null);
+        setInfiniteStepProgress(0);
         setDbError(null);
         setError(null);
 
@@ -474,47 +574,100 @@ export default function ScoreControlClient() {
             }
         }
 
-        const collected: InfiniteSongResult[] = [];
-        let totalChecked = 0;
-
+        // Build task queue: one task per event_rate that has songs
+        interface InfTask {
+            rate: number;
+            songsAtRate: any[];
+            firstMusicId: number;
+            firstSongTitle: string;
+        }
+        const taskQueue: InfTask[] = [];
         for (const rate of VALID_EVENT_RATES) {
-            if (infiniteSearchCancelledRef.current) break;
-            if (collected.length >= 10) break;
-
-            // Find all songs with this event_rate and the chosen difficulty
             const songsAtRate = musicMetas.filter(
                 (m: any) => m.event_rate === rate && m.difficulty === difficulty
             );
-            if (songsAtRate.length === 0) {
-                totalChecked++;
-                setInfiniteSearchProgress({ currentRate: rate, totalChecked, found: collected.length, currentSongTitle: "(无歌曲)" });
-                continue;
-            }
-
-            // Pick the first song at this rate to run the worker (event bonus is song-independent)
+            if (songsAtRate.length === 0) continue;
             const firstMeta = songsAtRate[0];
             const firstSongInfo = musics.find((m) => m.id === (firstMeta as any).music_id);
-            const firstSongTitle = firstSongInfo ? firstSongInfo.title : `Music ${(firstMeta as any).music_id}`;
-
-            setInfiniteSearchProgress({
-                currentRate: rate,
-                totalChecked,
-                found: collected.length,
-                currentSongTitle: `${firstSongTitle} (系数${rate}% · ${songsAtRate.length}首)`,
+            taskQueue.push({
+                rate,
+                songsAtRate,
+                firstMusicId: (firstMeta as any).music_id,
+                firstSongTitle: firstSongInfo ? firstSongInfo.title : `Music ${(firstMeta as any).music_id}`,
             });
+        }
 
-            // Run ONE worker for this event_rate
-            const workerResult = await new Promise<any>((resolve) => {
+        const collected: InfiniteSongResult[] = [];
+        let totalChecked = 0;
+        let taskIdx = 0;
+        const poolSize = Math.min(navigator.hardwareConcurrency || 4, 4);
+
+        // Start fake progress for the step
+        startFakeProgress(setInfiniteStepProgress, infiniteStepTimerRef);
+
+        // Process a single task and return result
+        const processTask = (task: InfTask): Promise<void> => {
+            return new Promise<void>((resolve) => {
+                if (infiniteSearchCancelledRef.current || collected.length >= 10) {
+                    resolve();
+                    return;
+                }
+
                 const w = new Worker(
                     new URL("@/lib/deck-recommend/deck-builder-worker.ts", import.meta.url)
                 );
                 w.onmessage = (evt) => {
-                    resolve(evt.data);
                     w.terminate();
+                    totalChecked++;
+
+                    // Reset step progress for next task
+                    stopFakeProgress(setInfiniteStepProgress, infiniteStepTimerRef, true);
+                    setTimeout(() => startFakeProgress(setInfiniteStepProgress, infiniteStepTimerRef), 100);
+
+                    const data = evt.data;
+                    if (!data.error && data.result && data.result.length > 0) {
+                        const results = data.result;
+                        const foundBonuses = Array.from(new Set<number>(results.map((r: any) => {
+                            const bonus = r.eventBonus ?? (r.score || 0);
+                            return Math.round((typeof bonus === 'number' ? bonus : 0) * 10) / 10;
+                        })));
+                        const routes = planSmartRoutes(
+                            targetPT, task.rate, bonusMin, bonusMax, 100000, 10, 20, foundBonuses
+                        );
+                        const pureAFKRoutes = routes.filter(r => r.isPureAFK);
+                        if (pureAFKRoutes.length > 0) {
+                            const allSongs = task.songsAtRate.map((m: any) => {
+                                const info = musics.find((mu) => mu.id === m.music_id);
+                                return {
+                                    musicId: m.music_id,
+                                    musicTitle: info ? info.title : `Music ${m.music_id}`,
+                                    assetbundleName: info ? info.assetbundleName : "",
+                                };
+                            });
+                            collected.push({
+                                eventRate: task.rate,
+                                songs: allSongs,
+                                difficulty,
+                                routes: pureAFKRoutes,
+                                decks: results,
+                            });
+                            setInfiniteSearchResults([...collected]);
+                        }
+                    }
+
+                    setInfiniteSearchProgress({
+                        currentRate: task.rate,
+                        totalChecked,
+                        found: collected.length,
+                        currentSongTitle: `${task.firstSongTitle} (系数${task.rate}%)`,
+                    });
+
+                    resolve();
                 };
-                w.onerror = (err) => {
-                    resolve({ error: err.message });
+                w.onerror = () => {
                     w.terminate();
+                    totalChecked++;
+                    resolve();
                 };
                 w.postMessage({
                     args: {
@@ -524,61 +677,52 @@ export default function ScoreControlClient() {
                         minBonus: bonusMin,
                         maxBonus: bonusMax,
                         liveType: dbLiveType,
-                        musicId: (firstMeta as any).music_id,
+                        musicId: task.firstMusicId,
                         difficulty,
                         supportCharacterId: dbSupportCharacterId || undefined,
                         cardConfig: configForCalc,
                     },
                 });
             });
+        };
 
-            if (infiniteSearchCancelledRef.current) break;
+        // Concurrent pool runner using tagged promises
+        const runPool = async () => {
+            let activeCount = 0;
+            let resolveSlot: (() => void) | null = null;
 
-            if (!workerResult.error && workerResult.result && workerResult.result.length > 0) {
-                const results = workerResult.result;
-                const foundBonuses = Array.from(new Set<number>(results.map((r: any) => {
-                    const bonus = r.eventBonus ?? (r.score || 0);
-                    return Math.round((typeof bonus === 'number' ? bonus : 0) * 10) / 10;
-                })));
+            const waitForSlot = (): Promise<void> => {
+                if (activeCount < poolSize) return Promise.resolve();
+                return new Promise<void>((resolve) => { resolveSlot = resolve; });
+            };
 
-                // Check if any pure AFK routes exist with these bonuses
-                const routes = planSmartRoutes(
-                    targetPT, rate, bonusMin, bonusMax, 100000, 10, 20, foundBonuses
-                );
-                const pureAFKRoutes = routes.filter(r => r.isPureAFK);
+            for (let i = 0; i < taskQueue.length; i++) {
+                if (infiniteSearchCancelledRef.current || collected.length >= 10) break;
 
-                if (pureAFKRoutes.length > 0) {
-                    // Collect ALL songs at this rate
-                    const allSongs = songsAtRate.map((m: any) => {
-                        const info = musics.find((mu) => mu.id === m.music_id);
-                        return {
-                            musicId: m.music_id,
-                            musicTitle: info ? info.title : `Music ${m.music_id}`,
-                            assetbundleName: info ? info.assetbundleName : "",
-                        };
-                    });
+                await waitForSlot();
+                if (infiniteSearchCancelledRef.current || collected.length >= 10) break;
 
-                    const entry: InfiniteSongResult = {
-                        eventRate: rate,
-                        songs: allSongs,
-                        difficulty,
-                        routes: pureAFKRoutes,
-                        decks: results,
-                    };
-                    collected.push(entry);
-                    setInfiniteSearchResults([...collected]);
-                    setInfiniteSearchProgress({
-                        currentRate: rate,
-                        totalChecked,
-                        found: collected.length,
-                        currentSongTitle: `${firstSongTitle} (已匹配)`,
-                    });
-                }
+                const task = taskQueue[i];
+                activeCount++;
+                processTask(task).then(() => {
+                    activeCount--;
+                    if (resolveSlot) {
+                        const fn = resolveSlot;
+                        resolveSlot = null;
+                        fn();
+                    }
+                });
             }
 
-            totalChecked++;
-        }
+            // Wait for all remaining tasks
+            while (activeCount > 0) {
+                await new Promise<void>((resolve) => { resolveSlot = resolve; });
+            }
+        };
 
+        await runPool();
+
+        stopFakeProgress(setInfiniteStepProgress, infiniteStepTimerRef, false);
         setInfiniteSearchRunning(false);
         setInfiniteSearchProgress(null);
     }, [musicMetas, musics, difficulty, dbUserId, dbServer, dbEventId, dbLiveType, dbSupportCharacterId, dbCardConfig, minBonus, maxBonus, targetPT]);
@@ -1292,12 +1436,21 @@ export default function ScoreControlClient() {
                             {dbUploadTime && <span className="text-xs text-slate-400">数据时间: {new Date(dbUploadTime * 1000).toLocaleString()}</span>}
                         </div>
                         {dbIsCalculating && (
-                            <div className="glass-card p-6 rounded-2xl text-center">
-                                <svg className="w-6 h-6 animate-spin mx-auto text-miku" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                <p className="text-slate-500 mt-2 text-xs">正在搜索满足条件的卡组...</p>
+                            <div className="glass-card p-6 rounded-2xl">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <svg className="w-5 h-5 animate-spin text-miku flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-primary-text">正在搜索满足条件的卡组...</p>
+                                        <p className="text-[10px] text-slate-400 mt-0.5">使用 {Math.min(navigator.hardwareConcurrency || 4, 4)} 个并行线程计算</p>
+                                    </div>
+                                    <span className="text-xs font-bold text-miku tabular-nums">{Math.round(dbFakeProgress)}%</span>
+                                </div>
+                                <div className="sc-fake-progress-track">
+                                    <div className="sc-fake-progress-fill" style={{ width: `${dbFakeProgress}%` }} />
+                                </div>
                             </div>
                         )}
                         {dbError && (
@@ -1338,6 +1491,16 @@ export default function ScoreControlClient() {
                                 <div className="mt-3 w-full bg-slate-200 rounded-full h-1.5">
                                     <div className="bg-gradient-to-r from-orange-400 to-red-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${Math.min(100, (VALID_EVENT_RATES.indexOf(infiniteSearchProgress.currentRate) + 1) / VALID_EVENT_RATES.length * 100)}%` }} />
                                 </div>
+                                {infiniteStepProgress > 0 && (
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <span className="text-[10px] text-slate-400 whitespace-nowrap">当前步骤</span>
+                                        <div className="sc-fake-progress-track flex-1">
+                                            <div className="sc-fake-progress-fill !bg-gradient-to-r !from-orange-400 !to-red-400" style={{ width: `${infiniteStepProgress}%` }} />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-orange-500 tabular-nums w-8 text-right">{Math.round(infiniteStepProgress)}%</span>
+                                    </div>
+                                )}
+                                <p className="mt-1.5 text-[10px] text-slate-400">使用 {Math.min(navigator.hardwareConcurrency || 4, 4)} 个并行线程</p>
                             </div>
                         )}
 
