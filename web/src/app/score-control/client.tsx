@@ -188,6 +188,23 @@ export default function ScoreControlClient() {
     const [infiniteStepProgress, setInfiniteStepProgress] = useState<number>(0);
     const infiniteStepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+    /** 计算路线并设置状态（含 fallback） */
+    const computeAndSetRoutes = (
+        tp: number, rate: number, bMin: number, bMax: number,
+        maxScore: number, bonuses?: number[]
+    ) => {
+        const routes = planSmartRoutes(tp, rate, bMin, bMax, maxScore, 10, 20, bonuses);
+        setSmartRoutes(routes);
+        if (routes.length > 0) {
+            setExpandedRoute(0);
+        } else {
+            const raw = getValidScores(tp, rate, 415, 3000000);
+            const filtered = raw.filter(r => r.eventBonus >= bMin && r.eventBonus <= bMax);
+            setFallbackResults(groupByBoost(filtered));
+            setFallbackCount(filtered.length);
+        }
+    };
+
     /** Start a fake progress animation that asymptotically approaches ~90% */
     const startFakeProgress = useCallback((
         setter: React.Dispatch<React.SetStateAction<number>>,
@@ -324,20 +341,7 @@ export default function ScoreControlClient() {
                     const bonusMin = Math.max(0, minBonus);
                     const bonusMax = Math.min(415, maxBonus);
 
-                    const routes = planSmartRoutes(
-                        targetPT, selectedEventRate, bonusMin, bonusMax, 3000000, 10, 20,
-                    );
-                    setSmartRoutes(routes);
-
-                    if (routes.length > 0) {
-                        setExpandedRoute(0);
-                    } else {
-                        const raw = getValidScores(targetPT, selectedEventRate, 415, 3000000);
-                        const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
-                        const groups = groupByBoost(filtered);
-                        setFallbackResults(groups);
-                        setFallbackCount(filtered.length);
-                    }
+                    computeAndSetRoutes(targetPT, selectedEventRate, bonusMin, bonusMax, 3000000);
                 } catch (err: any) {
                     setError(err.message || "计算出错");
                     setSmartRoutes(null);
@@ -442,18 +446,7 @@ export default function ScoreControlClient() {
                         const bonus = r.eventBonus ?? (r.score || 0);
                         return Math.round((typeof bonus === 'number' ? bonus : 0) * 10) / 10;
                     })));
-                    const newRoutes = planSmartRoutes(
-                        targetPT, selectedEventRate!, bonusMin, bonusMax, 100000, 10, 20, foundBonuses
-                    );
-                    setSmartRoutes(newRoutes);
-                    if (newRoutes.length > 0) {
-                        setExpandedRoute(0);
-                    } else {
-                        const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
-                        const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
-                        setFallbackResults(groupByBoost(filtered));
-                        setFallbackCount(filtered.length);
-                    }
+                    computeAndSetRoutes(targetPT, selectedEventRate!, bonusMin, bonusMax, 100000, foundBonuses);
                 } else {
                     setSmartRoutes([]);
                 }
@@ -479,17 +472,7 @@ export default function ScoreControlClient() {
                             setDbError(getErrorMessage(data.error));
                             // Fallback routes
                             try {
-                                const routes = planSmartRoutes(
-                                    targetPT, selectedEventRate!, bonusMin, bonusMax, 3000000, 10, 20,
-                                );
-                                setSmartRoutes(routes);
-                                if (routes.length > 0) setExpandedRoute(0);
-                                else {
-                                    const raw = getValidScores(targetPT, selectedEventRate!, 415, 3000000);
-                                    const filtered = raw.filter(r => r.eventBonus >= bonusMin && r.eventBonus <= bonusMax);
-                                    setFallbackResults(groupByBoost(filtered));
-                                    setFallbackCount(filtered.length);
-                                }
+                                computeAndSetRoutes(targetPT, selectedEventRate!, bonusMin, bonusMax, 3000000);
                             } catch (_) { /* ignore */ }
                         }
                     } else {

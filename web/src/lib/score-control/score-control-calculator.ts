@@ -76,7 +76,6 @@ export function getValidScores(
     maxScore: number = 3000000,
 ): ScoreControlResult[] {
     const results: ScoreControlResult[] = [];
-    const actualMaxScore = Math.max(maxScore, 3000000);
 
     for (let eventBonus = 0; eventBonus <= maxEventBonus; eventBonus++) {
         for (const opt of FIRE_OPTIONS) {
@@ -92,17 +91,17 @@ export function getValidScores(
 
             // 查找 score_max: 满足 calc() == targetPoint 的最大分数
             let lo = 0;
-            let hi = actualMaxScore;
+            let hi = maxScore;
             let scoreMax = -1;
 
             // 先检查边界是否有解
             if (calc(0, eventBonus, eventRate, boost) > targetPoint) continue;
-            if (calc(actualMaxScore, eventBonus, eventRate, boost) < targetPoint) continue;
+            if (calc(maxScore, eventBonus, eventRate, boost) < targetPoint) continue;
 
             // 找上界: 最大的 score 使得 calc(score) == targetPoint
             // 等价于找最大的 score 使得 calc(score) <= targetPoint
             lo = 0;
-            hi = actualMaxScore;
+            hi = maxScore;
             while (lo <= hi) {
                 const mid = Math.floor((lo + hi) / 2);
                 const pt = calc(mid, eventBonus, eventRate, boost);
@@ -304,13 +303,18 @@ export function planSmartRoutes(
     }
 
     // Step 3: 放置+控分路线 — N × 放置PT + 1 × 控分PT = 目标
+    const remainderCache = new Map<number, ScoreControlResult[]>();
     for (const afk of afkOptions) {
         const maxN = Math.min(Math.floor(targetPoint / afk.pt), maxPlays - 1);
         for (let n = maxN; n >= 1; n--) {
             const remainder = targetPoint - n * afk.pt;
             if (remainder <= 0) continue;
 
-            const controlledRaw = getValidScores(remainder, eventRate, maxEventBonus, maxScoreLimit);
+            let controlledRaw = remainderCache.get(remainder);
+            if (controlledRaw === undefined) {
+                controlledRaw = getValidScores(remainder, eventRate, maxEventBonus, maxScoreLimit);
+                remainderCache.set(remainder, controlledRaw);
+            }
 
             // Filter by minEventBonus AND validBonuses if present
             const controlled = controlledRaw.filter(r => {
@@ -326,12 +330,17 @@ export function planSmartRoutes(
             if (controlled.length === 0) continue;
 
             // 选最佳方案: 优先放置 (scoreMin=0)，然后低 eventBonus
-            const sorted = [...controlled].sort((a, b) => {
-                if (a.scoreMin === 0 && b.scoreMin !== 0) return -1;
-                if (b.scoreMin === 0 && a.scoreMin !== 0) return 1;
-                return a.eventBonus - b.eventBonus || a.boost - b.boost;
-            });
-            const best = sorted[0];
+            let best = controlled[0];
+            for (let i = 1; i < controlled.length; i++) {
+                const c = controlled[i];
+                const cIsAFK = c.scoreMin === 0;
+                const bIsAFK = best.scoreMin === 0;
+                if ((cIsAFK && !bIsAFK) ||
+                    (cIsAFK === bIsAFK && (c.eventBonus < best.eventBonus ||
+                        (c.eventBonus === best.eventBonus && c.boost < best.boost)))) {
+                    best = c;
+                }
+            }
             const isLastStepAFK = best.scoreMin === 0;
 
             const key = `mixed_${afk.pt}_${n}_${remainder}`;
