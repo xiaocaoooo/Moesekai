@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const [themeCharId, setThemeCharId] = useState<string>(DEFAULT_THEME_CHAR);
     const [themeColor, setThemeColor] = useState<string>(DEFAULT_COLOR);
     const [isShowSpoiler, setIsShowSpoiler] = useState(false);
-    const [isPowerSaving, setIsPowerSaving] = useState(false);
+    const [isPowerSaving, setIsPowerSaving] = useState(true);
     const [useTrainedThumbnailState, setUseTrainedThumbnailState] = useState(false);
     const [assetSourceState, setAssetSourceState] = useState<AssetSourceType>(DEFAULT_ASSET_SOURCE);
     const [useLLMTranslationState, setUseLLMTranslationState] = useState(true); // Default ON
@@ -64,10 +64,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         if (savedSpoiler === "true") {
             setIsShowSpoiler(true);
         }
-        // Load power saving setting
-        const savedPowerSaving = localStorage.getItem("power-saving");
-        if (savedPowerSaving === "true") {
-            setIsPowerSaving(true);
+        // Load power saving setting (v2: default ON, ignore old "power-saving" cache)
+        const savedPowerSaving = localStorage.getItem("power-saving-v2");
+        if (savedPowerSaving === "false") {
+            setIsPowerSaving(false);
         }
         // Load trained thumbnail setting
         const savedTrainedThumbnail = localStorage.getItem("use-trained-thumbnail");
@@ -149,7 +149,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const setPowerSaving = (enabled: boolean) => {
         setIsPowerSaving(enabled);
         try {
-            localStorage.setItem("power-saving", enabled ? "true" : "false");
+            localStorage.setItem("power-saving-v2", enabled ? "true" : "false");
         } catch (e) {
             console.error("Failed to save power saving setting to localStorage:", e);
         }
