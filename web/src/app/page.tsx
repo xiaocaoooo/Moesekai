@@ -307,35 +307,34 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Link 1: SnowyBot */}
-            <ExternalLink href="https://pjsk.moe" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
+            <ExternalLink href="https://bot.pjsk.moe" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
               <div className="relative z-10 h-full flex items-center justify-between px-6">
                 <div className="text-left">
-                  <h3 className="text-md font-bold text-primary-text">Moesekai 主站</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Main Site</p>
+                  <h3 className="text-md font-bold text-primary-text">Moesekai Bot站</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bot Site</p>
                 </div>
                 <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </div>
             </ExternalLink>
 
             {/* Link 2: Story */}
-            <ExternalLink href="https://sekaistory.exmeaning.com/" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
+            <ExternalLink href="https://haruki.seiunx.com" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
               <div className="relative z-10 h-full flex items-center justify-between px-6">
                 <div className="text-left">
-                  <h3 className="text-md font-bold text-primary-text">剧情站</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Story Reader</p>
+                  <h3 className="text-md font-bold text-primary-text">Haruki工具箱</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Haruki Toolbox</p>
                 </div>
-                <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </div>
             </ExternalLink>
 
             {/* Link 3: Predictor */}
-            <ExternalLink href="https://sekaibangdan.exmeaning.com" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
+            <ExternalLink href="https://viewer.unipjsk.com" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
               <div className="relative z-10 h-full flex items-center justify-between px-6">
                 <div className="text-left">
-                  <h3 className="text-md font-bold text-primary-text">预测站</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Predictor</p>
+                  <h3 className="text-md font-bold text-primary-text">Uni Viewer</h3>
                 </div>
-                <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </div>
             </ExternalLink>
           </div>
