@@ -590,6 +590,8 @@ function DeckResultRow({ deck, rank, getCardMaster, assetSource, mode, userCards
         return sum + (card.eventBonus.total || card.eventBonus.all || 0);
     }, 0) || 0);
 
+    const effectiveSkill = deck.cards && deck.cards.length === 5 ? (deck.cards[0].skill?.scoreUp || 0) + deck.cards.slice(1).reduce((sum: number, card: any) => sum + (card.skill?.scoreUp || 0), 0) / 5 : 0;
+
     return (
         <div className="dr-result-row rounded-xl border border-slate-100 overflow-hidden hover:border-miku/30 transition-all">
             <button onClick={() => setShowDetails(!showDetails)}
@@ -601,12 +603,25 @@ function DeckResultRow({ deck, rank, getCardMaster, assetSource, mode, userCards
                             <div className="text-xs text-slate-400">{scoreLabel}</div>
                             <div className="font-bold text-primary-text text-sm">{Math.floor(deck.score).toLocaleString()}</div>
                         </div>
-                        {mode === "mysekai" && deck.mysekaiPt && (
+                        {effectiveSkill > 0 && mode !== "challenge" && mode !== "mysekai" && (
                             <div className="flex-shrink-0 min-w-[60px]">
-                                <div className="text-xs text-slate-400">烤森PT</div>
-                                <div className="font-bold text-amber-600 text-sm">{deck.mysekaiPt.toLocaleString()}</div>
+                                <div className="text-xs text-slate-400">实效值</div>
+                                <div className="font-bold text-emerald-600 text-sm">{effectiveSkill.toFixed(1)}%</div>
                             </div>
                         )}
+                        {deck.power?.total > 0 && (
+                            <div className="flex-shrink-0 min-w-[60px] sm:hidden">
+                                <div className="text-xs text-slate-400">综合力</div>
+                                <div className="font-bold text-miku text-sm">{deck.power.total.toLocaleString()}</div>
+                            </div>
+                        )}
+                        {(mode === "event" || mode === "mysekai" || mode === "custom") && eventBonus > 0 && (
+                            <div className="flex-shrink-0 min-w-[60px] hidden sm:block">
+                                <div className="text-xs text-slate-400">{mode === "custom" ? "自定义加成" : "加成"}</div>
+                                <div className="font-bold text-miku text-sm">{eventBonus}%</div>
+                            </div>
+                        )}
+
                     </div>
                     <svg className={`w-4 h-4 text-slate-400 transition-transform sm:hidden ${showDetails ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -637,10 +652,10 @@ function DeckResultRow({ deck, rank, getCardMaster, assetSource, mode, userCards
                         );
                     })}
                 </div>
-                {(mode === "event" || mode === "mysekai" || mode === "custom") && eventBonus > 0 && (
+                {deck.power?.total > 0 && (
                     <div className="flex-shrink-0 text-right hidden sm:block">
-                        <div className="text-xs text-slate-400">{mode === "custom" ? "自定义加成" : "加成"}</div>
-                        <div className="font-bold text-sm text-miku">{eventBonus}%</div>
+                        <div className="text-xs text-slate-400">综合力</div>
+                        <div className="font-bold text-sm text-miku">{deck.power.total.toLocaleString()}</div>
                     </div>
                 )}
                 <svg className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 hidden sm:block ${showDetails ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -662,7 +677,7 @@ function DeckResultRow({ deck, rank, getCardMaster, assetSource, mode, userCards
                             <tbody>
                                 {deck.cards?.map((card: any, i: number) => {
                                     const masterCard = getCardMaster(card.cardId);
-                                    const basePower = card.power ? (card.power.base || 0) + (card.power.areaItem || 0) + (card.power.characterRank || 0) + (card.power.honor || 0) + (card.power.mysekaiGate || 0) + (card.power.mysekaiCanvas || 0) + (card.power.masterRank || 0) : 0;
+                                    const basePower = card.power?.total || 0;
                                     const eb = card.eventBonus;
                                     const cardName = masterCard?.prefix || (masterCard ? CHAR_NAMES[masterCard.characterId] : `ID:${card.characterId}`);
                                     return (

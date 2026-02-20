@@ -114,52 +114,37 @@ export class DeckCalculator {
       const cardDetail = cardDetails[i]
       const hasDouble = cardDetail.skill.hasPreTraining
 
-      // 花後技能：从主 map 取最优
+      // 花後技能：从主 map 取最优（只从 unit-based 技能中取，不检查 ref/diff）
       let s2: DeckCardSkillDetailPrepare = { skillId: 0, isAfterTraining: false, scoreUpFixed: 0, scoreUpToReference: 0, lifeRecovery: 0 }
       for (const unit of cardDetail.units) {
         const current = cardDetail.skill.getSkill(unit, getOrThrow(unitMap, unit))
         if (current.scoreUpFixed > s2.scoreUpFixed) s2 = { ...current }
       }
-      // 也检查 ref 和 diff（花後可能也有这些）
-      try {
-        const refSkill = cardDetail.skill.getSkill('ref', 1)
-        const refScoreUp = refSkill.scoreUpFixed + (refSkill.scoreUpReferenceMax ?? 0)
-        if (refScoreUp > s2.scoreUpFixed) s2 = { ...refSkill, scoreUpFixed: refScoreUp, scoreUpToReference: refScoreUp }
-      } catch (_) { /* no ref */ }
-      try {
-        const diffSkill = cardDetail.skill.getSkill('diff', unitNum - 1)
-        if (diffSkill.scoreUpFixed > s2.scoreUpFixed) s2 = { ...diffSkill }
-      } catch (_) { /* no diff */ }
 
       // 花前技能：从 preTraining map 取最优
       let s1: DeckCardSkillDetailPrepare = { skillId: 0, isAfterTraining: false, scoreUpFixed: 0, scoreUpToReference: 0, lifeRecovery: 0 }
       let needEnumerate = false
 
       if (hasDouble) {
-        for (const unit of cardDetail.units) {
-          const current = cardDetail.skill.getPreTrainingSkill(unit, getOrThrow(unitMap, unit))
-          if (current.scoreUpFixed > s1.scoreUpFixed) s1 = { ...current }
-        }
-        // 花前的 ref
+        // 吸分技能效果(max)
         try {
           const refSkill = cardDetail.skill.getPreTrainingSkill('ref', 1)
           const refScoreUp = refSkill.scoreUpFixed + (refSkill.scoreUpReferenceMax ?? 0)
-          if (refScoreUp > s1.scoreUpFixed) {
-            // scoreUpFixed 设为 base+refMax（枚举时会减回去再加实际吸分值）
-            // scoreUpToReference 也设为 base+refMax（被其他卡吸时按最高值算）
+          if (refSkill.skillId !== s2.skillId && refScoreUp > s1.scoreUpFixed) {
             s1 = { ...refSkill, scoreUpFixed: refScoreUp, scoreUpToReference: refScoreUp }
             needEnumerate = true // 吸分技能需要枚举
           }
         } catch (_) { /* no ref */ }
-        // 花前的 diff
+        // 异组技能效果
         try {
           const diffSkill = cardDetail.skill.getPreTrainingSkill('diff', unitNum - 1)
-          if (diffSkill.scoreUpFixed > s1.scoreUpFixed) {
+          if (diffSkill.skillId !== s2.skillId && diffSkill.scoreUpFixed > s1.scoreUpFixed) {
             s1 = { ...diffSkill }
             needEnumerate = false // 异组技能不需要枚举
           }
         } catch (_) { /* no diff */ }
 
+        // 记录有双技能的位置
         doubleSkillMask |= (1 << i)
       }
 

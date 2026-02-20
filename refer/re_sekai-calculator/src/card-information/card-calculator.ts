@@ -46,16 +46,28 @@ export class CardCalculator {
    */
   public async getCardDetail (
     userCard: UserCard, userAreaItemLevels: AreaItemLevel[], config: Record<string, CardConfig> = {},
-    eventConfig: EventConfig = {}, hasCanvasBonus: boolean, userGateBonuses: MysekaiGateBonus[]
+    eventConfig: EventConfig = {}, hasCanvasBonus: boolean, userGateBonuses: MysekaiGateBonus[],
+    singleCardConfig: Record<number, CardConfig> = {}
   ): Promise<CardDetail | undefined> {
     const { eventId = 0 } = eventConfig
     const cards = await this.dataProvider.getMasterData<Card>('cards')
     const card = findOrThrow(cards, it => it.id === userCard.cardId)
 
-    const config0 = config[card.cardRarityType]
-    if (config0 !== undefined && config0.disable === true) return undefined // 忽略被禁用的稀有度卡牌
+    // 单独卡配置覆盖稀有度卡配置
+    let cfg: CardConfig | undefined
+    if (singleCardConfig[card.id] !== undefined) {
+      cfg = singleCardConfig[card.id]
+    } else {
+      cfg = config[card.cardRarityType]
+    }
 
-    const userCard0 = await this.cardService.applyCardConfig(userCard, card, config0)
+    // 判断禁用
+    if (cfg !== undefined && cfg.disable === true) return undefined
+
+    // 判断强制使用画布
+    if (cfg?.canvas === true) hasCanvasBonus = true
+
+    const userCard0 = await this.cardService.applyCardConfig(userCard, card, cfg)
 
     const units = await this.cardService.getCardUnits(card)
     const skill = await this.skillCalculator.getCardSkill(userCard0, card, eventConfig.skillScoreUpLimit)
@@ -94,7 +106,8 @@ export class CardCalculator {
    */
   public async batchGetCardDetail (
     userCards: UserCard[], config: Record<string, CardConfig> = {},
-    eventConfig: EventConfig = {}, areaItemLevels?: AreaItemLevel[]
+    eventConfig: EventConfig = {}, areaItemLevels?: AreaItemLevel[],
+    singleCardConfig: Record<number, CardConfig> = {}
   ): Promise<CardDetail[]> {
     const areaItemLevels0 = areaItemLevels === undefined
       ? await this.areaItemService.getAreaItemLevels()
@@ -106,7 +119,7 @@ export class CardCalculator {
     const ret = await Promise.all(
       userCards.map(async it =>
         await this.getCardDetail(it, areaItemLevels0, config, eventConfig, userCanvasBonusCards.has(it.cardId),
-          userGateBonuses))
+          userGateBonuses, singleCardConfig))
     ).then(it => it.filter(it => it !== undefined)) as CardDetail[]
     // 如果是给World Link活动算的话，allCards一定要按支援加成从大到小排序
     if (eventConfig?.specialCharacterId !== undefined && eventConfig.specialCharacterId > 0) {
@@ -176,4 +189,8 @@ export interface CardConfig {
    * 是否按技能满级计算
    */
   skillMax?: boolean
+  /**
+   * 强制使用画布加成
+   */
+  canvas?: boolean
 }
