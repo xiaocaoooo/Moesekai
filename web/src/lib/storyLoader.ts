@@ -156,7 +156,10 @@ export async function processScenarioForDisplay(
                 const effectTypeName = SpecialEffectType[seData.EffectType] || "Unknown";
 
                 let resource = "";
-                if (seData.EffectType === SpecialEffectType.ChangeBackground) {
+                if (
+                    seData.EffectType === SpecialEffectType.ChangeBackground ||
+                    seData.EffectType === SpecialEffectType.ChangeBackgroundStill
+                ) {
                     resource = getBackgroundImageUrl(seData.StringValSub || seData.StringVal);
                 } else if (seData.EffectType === SpecialEffectType.FullScreenText) {
                     // Voice for fullscreen text

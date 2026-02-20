@@ -492,9 +492,10 @@ async function runCustomMode(
         default: computedLiveType = LiveType.MULTI; break;
     }
 
-    // Build card info lookup: cardId -> { units: string[], attr: string }
+    // Build card info lookup: cardId -> { units: string[], attr: string, cardRarityType: string }
     const masterCards = await dataProvider.getMasterData<any>("cards");
     const gameCharacterUnits = await dataProvider.getMasterData<any>("gameCharacterUnits");
+    const eventRarityBonusRates = await dataProvider.getMasterData<any>("eventRarityBonusRates");
 
     // Build characterId -> units[] map
     const charUnitsMap = new Map<number, string[]>();
@@ -504,15 +505,29 @@ async function runCustomMode(
         charUnitsMap.get(charId)!.push(gcu.unit);
     }
 
-    // Build cardId -> { attr, units, characterId } map
-    const cardInfoMap = new Map<number, { attr: string; units: string[]; characterId: number }>();
+    // Build cardId -> { attr, units, characterId, cardRarityType } map
+    const cardInfoMap = new Map<number, { attr: string; units: string[]; characterId: number; cardRarityType: string }>();
     for (const card of masterCards) {
         const units = charUnitsMap.get(card.characterId) || [];
         cardInfoMap.set(card.id, {
             attr: card.attr,
             units,
             characterId: card.characterId,
+            cardRarityType: card.cardRarityType,
         });
+    }
+
+    // Build (cardRarityType, masterRank) -> bonusRate lookup for masterRank bonus
+    const masterRankBonusMap = new Map<string, number>();
+    for (const rate of eventRarityBonusRates) {
+        const key = `${rate.cardRarityType}_${rate.masterRank}`;
+        masterRankBonusMap.set(key, rate.bonusRate);
+    }
+
+    // Build cardId -> masterRank lookup from userCards
+    const userCardMasterRankMap = new Map<number, number>();
+    for (const uc of userCards) {
+        userCardMasterRankMap.set(uc.cardId, uc.masterRank || 0);
     }
 
     sendProgress("calculating", 55, "使用自定义加成计算中...");
@@ -522,18 +537,25 @@ async function runCustomMode(
     // Use BaseDeckRecommend with live score function (no event dependency)
     const baseRecommend = new BaseDeckRecommend(dataProvider);
 
-    // Helper: calculate custom bonus for a deck's cards
+    // Helper: calculate custom bonus for a deck's cards (including masterRank bonus)
     const calcDeckCustomBonus = (cards: any[]): number => {
         let totalCustomBonus = 0;
         for (const card of cards) {
             const info = cardInfoMap.get(card.cardId);
             if (!info) continue;
+            // Unit bonus
             if (customUnit && CUSTOM_UNIT_MAP[customUnit] && info.units.includes(CUSTOM_UNIT_MAP[customUnit])) {
                 totalCustomBonus += customUnitBonus;
             }
+            // Attr bonus
             if (customAttr && info.attr === customAttr) {
                 totalCustomBonus += customAttrBonus;
             }
+            // MasterRank bonus (from eventRarityBonusRates)
+            const masterRank = card.masterRank ?? userCardMasterRankMap.get(card.cardId) ?? 0;
+            const mrKey = `${info.cardRarityType}_${masterRank}`;
+            const mrBonus = masterRankBonusMap.get(mrKey) ?? 0;
+            totalCustomBonus += mrBonus;
         }
         return totalCustomBonus;
     };
@@ -585,12 +607,19 @@ async function runCustomMode(
             const info = cardInfoMap.get(card.cardId);
             let cardBonus = 0;
             if (info) {
+                // Unit bonus
                 if (customUnit && CUSTOM_UNIT_MAP[customUnit] && info.units.includes(CUSTOM_UNIT_MAP[customUnit])) {
                     cardBonus += customUnitBonus;
                 }
+                // Attr bonus
                 if (customAttr && info.attr === customAttr) {
                     cardBonus += customAttrBonus;
                 }
+                // MasterRank bonus
+                const masterRank = card.masterRank ?? userCardMasterRankMap.get(card.cardId) ?? 0;
+                const mrKey = `${info.cardRarityType}_${masterRank}`;
+                const mrBonus = masterRankBonusMap.get(mrKey) ?? 0;
+                cardBonus += mrBonus;
             }
             totalCustomBonus += cardBonus;
             return {

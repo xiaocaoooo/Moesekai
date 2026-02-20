@@ -116,6 +116,7 @@ export function SpecialEffectSnippet({ seType, text, resource }: SpecialEffectSn
             );
 
         case "ChangeBackground":
+        case "ChangeBackgroundStill":
             return (
                 <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-4 my-3 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2 mb-3">
@@ -143,6 +144,64 @@ export function SpecialEffectSnippet({ seType, text, resource }: SpecialEffectSn
                             显示背景
                         </button>
                     )}
+                </div>
+            );
+
+        case "FlashbackIn":
+            return (
+                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl p-3 my-3 border border-yellow-300 dark:border-yellow-700/50">
+                    <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 text-xs font-medium rounded-full">
+                            回忆切入
+                        </span>
+                    </div>
+                </div>
+            );
+
+        case "FlashbackOut":
+            return (
+                <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl p-3 my-3 border border-yellow-300 dark:border-yellow-700/50">
+                    <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 text-xs font-medium rounded-full">
+                            回忆切出
+                        </span>
+                    </div>
+                </div>
+            );
+
+        case "BlackOut":
+            return (
+                <div className="bg-slate-900/80 dark:bg-slate-950/80 rounded-xl p-3 my-3 border border-slate-600 dark:border-slate-700">
+                    <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 bg-slate-600/30 text-slate-300 text-xs font-medium rounded-full">
+                            黑屏转场
+                        </span>
+                    </div>
+                </div>
+            );
+
+        case "WhiteOut":
+            return (
+                <div className="bg-white/90 dark:bg-slate-200/20 rounded-xl p-3 my-3 border border-slate-300 dark:border-slate-500">
+                    <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 bg-slate-200/50 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full">
+                            白屏转场
+                        </span>
+                    </div>
+                </div>
+            );
+
+        case "SimpleSelectable":
+            return (
+                <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-900/30 dark:to-violet-900/30 rounded-xl p-4 my-3 border border-indigo-300 dark:border-indigo-700/50">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-full">
+                            选项
+                        </span>
+                    </div>
+                    <p className="text-indigo-800 dark:text-indigo-200 text-base leading-relaxed text-center whitespace-pre-wrap">
+                        {text?.trimStart()}
+                    </p>
                 </div>
             );
 

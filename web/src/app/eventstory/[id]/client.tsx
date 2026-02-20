@@ -65,7 +65,7 @@ function ChapterItem({
                         </div>
 
                         {chapter.summary_cn ? (
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed line-clamp-3 sm:line-clamp-none">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
                                 {chapter.summary_cn}
                             </p>
                         ) : (
