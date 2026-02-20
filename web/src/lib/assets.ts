@@ -258,6 +258,64 @@ export function getCharacterSelectUrl(characterId: number, source: AssetSourceTy
     return `${baseUrl}/startapp/character/character_select/chr_tl_${characterId}.png`;
 }
 
+// ==================== Honor/Degree Asset URLs ====================
+
+// Honor background image (degree_main or degree_sub)
+export function getHonorBgUrl(assetbundleName: string, sub: boolean = false, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    return `${baseUrl}/startapp/honor/${assetbundleName}/degree_${sub ? "sub" : "main"}.png`;
+}
+
+// Honor frame image (generic frames by rarity)
+export function getHonorFrameUrl(rarity: string, sub: boolean = false, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    const rarityMap: Record<string, number> = { low: 1, middle: 2, high: 3, highest: 4 };
+    const num = rarityMap[rarity] || 1;
+    const size = sub ? "s" : "m";
+    return `${baseUrl}/startapp/honor/frame/frame_degree_${size}_${num}.png`;
+}
+
+// Honor custom frame (for specific honor groups like birthday)
+export function getHonorCustomFrameUrl(frameName: string, rarity: string, sub: boolean = false, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    const rarityMap: Record<string, number> = { low: 1, middle: 2, high: 3, highest: 4 };
+    const num = rarityMap[rarity] || 1;
+    const size = sub ? "s" : "m";
+    return `${baseUrl}/startapp/honor_frame/${frameName}/frame_degree_${size}_${num}.png`;
+}
+
+// Honor rank/scroll overlay image
+export function getHonorRankUrl(assetbundleName: string, type: "rank" | "scroll", sub: boolean = false, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    const suffix = type === "rank" ? `rank_${sub ? "sub" : "main"}` : "scroll";
+    return `${baseUrl}/startapp/honor/${assetbundleName}/${suffix}.png`;
+}
+
+// Honor rank match background
+export function getHonorRankMatchBgUrl(assetbundleName: string, sub: boolean = false, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    return `${baseUrl}/startapp/rank_live/honor/${assetbundleName}/degree_${sub ? "sub" : "main"}.png`;
+}
+
+// Bonds honor word image
+export function getBondsHonorWordUrl(assetbundleName: string, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    return `${baseUrl}/startapp/bonds_honor/word/${assetbundleName}_01.png`;
+}
+
+// Bonds honor character SD image
+export function getBondsHonorCharacterUrl(characterId: number, source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    const paddedId = String(characterId).padStart(2, "0");
+    return `${baseUrl}/startapp/bonds_honor/character/chr_sd_${paddedId}_01.png`;
+}
+
+// Honor degree level icon
+export function getHonorLevelIconUrl(source: AssetSourceType = "snowyassets"): string {
+    const baseUrl = getAssetBaseUrl(isCnSource(source) ? source : (source === "uni" ? "snowyassets" : source));
+    return `${baseUrl}/startapp/honor/frame/icon_degreeLv.png`;
+}
+
 // ==================== Story/Scenario Asset URLs ====================
 
 // Get scenario JSON URL (uses /ondemand/ and .json extension)
