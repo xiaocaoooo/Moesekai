@@ -330,6 +330,33 @@ export async function fetchVersionInfoNoCache(): Promise<VersionInfo> {
 export const MASTERDATA_VERSION_KEY = "masterdata-version";
 
 /**
+ * Fetch master data for a specific game server (cn/jp/tw)
+ * Unlike fetchMasterData(), this does NOT use the global localStorage server setting.
+ * Used by features that need server-specific masterdata (e.g., card progress page).
+ * - cn → sekaimaster-cn
+ * - jp → sekaimaster (jp)
+ * - tw → sekaimaster-cn (same as cn)
+ */
+export async function fetchMasterDataForServer<T>(server: "cn" | "jp" | "tw", path: string): Promise<T> {
+    const masterServer: "cn" | "jp" = (server === "cn" || server === "tw") ? "cn" : "jp";
+    const domain = SERVER_DOMAINS[masterServer];
+    const fallbackDomain = FALLBACK_DOMAINS[masterServer];
+
+    const primaryUrl = `https://${domain}/master/${path}`;
+    try {
+        const response = await fetchWithCompression(primaryUrl);
+        if (response.ok) return response.json();
+    } catch { /* fall through */ }
+
+    const fallbackUrl = `https://${fallbackDomain}/master/${path}`;
+    const fallbackResponse = await fetchWithCompression(fallbackUrl);
+    if (!fallbackResponse.ok) {
+        throw new Error(`Failed to fetch ${path} for server ${server}`);
+    }
+    return fallbackResponse.json();
+}
+
+/**
  * Fetch master data from the CN build source (GitHub raw)
  * Used at build time (SSG) to get CN-only content IDs
  * @param path - Path relative to master directory (e.g., "cards.json")

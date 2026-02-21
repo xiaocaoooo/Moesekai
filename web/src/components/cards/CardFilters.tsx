@@ -32,9 +32,12 @@ interface CardFiltersProps {
     onSearchChange: (query: string) => void;
 
     // Sort
-    sortBy: "id" | "releaseAt" | "rarity";
+    sortBy: string;
     sortOrder: "asc" | "desc";
-    onSortChange: (sortBy: "id" | "releaseAt" | "rarity", sortOrder: "asc" | "desc") => void;
+    onSortChange: (sortBy: string, sortOrder: "asc" | "desc") => void;
+
+    // Extra sort options (e.g. for my-cards page)
+    extraSortOptions?: { id: string; label: string }[];
 
     // Reset
     onReset: () => void;
@@ -92,6 +95,7 @@ export default function CardFilters({
     sortBy,
     sortOrder,
     onSortChange,
+    extraSortOptions,
     onReset,
     totalCards,
     filteredCards,
@@ -183,10 +187,10 @@ export default function CardFilters({
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
             searchPlaceholder="搜索卡牌名称或ID..."
-            sortOptions={SORT_OPTIONS}
+            sortOptions={extraSortOptions ? [...SORT_OPTIONS, ...extraSortOptions] : SORT_OPTIONS}
             sortBy={sortBy}
             sortOrder={sortOrder}
-            onSortChange={(id, order) => onSortChange(id as "id" | "releaseAt" | "rarity", order)}
+            onSortChange={(id, order) => onSortChange(id, order)}
             hasActiveFilters={hasActiveFilters}
             onReset={handleReset}
         >

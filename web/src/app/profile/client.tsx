@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/MainLayout";
+import ExternalLink from "@/components/ExternalLink";
 import {
     getAccounts,
     getActiveAccount,
@@ -184,11 +185,10 @@ export default function ProfileClient() {
                                 return (
                                     <div
                                         key={acc.id}
-                                        className={`relative p-4 rounded-xl border transition-all ${
-                                            isActive
+                                        className={`relative p-4 rounded-xl border transition-all ${isActive
                                                 ? "border-miku/40 bg-miku/5 shadow-sm"
                                                 : "border-slate-100 bg-slate-50/50 hover:border-slate-200"
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             {/* Avatar */}
@@ -216,9 +216,8 @@ export default function ProfileClient() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-mono text-sm font-bold text-primary-text">{acc.gameId}</span>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                                        isActive ? "bg-miku/20 text-miku" : "bg-slate-100 text-slate-500"
-                                                    }`}>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${isActive ? "bg-miku/20 text-miku" : "bg-slate-100 text-slate-500"
+                                                        }`}>
                                                         {SERVER_LABELS[acc.server]}
                                                     </span>
                                                     {isActive && (
@@ -286,11 +285,10 @@ export default function ProfileClient() {
                                                             <button
                                                                 key={c.characterId}
                                                                 onClick={() => handleChangeAvatar(acc.id, c.characterId)}
-                                                                className={`relative w-9 h-9 rounded-full overflow-hidden transition-all ${
-                                                                    charId === c.characterId
+                                                                className={`relative w-9 h-9 rounded-full overflow-hidden transition-all ${charId === c.characterId
                                                                         ? "ring-2 ring-miku shadow-md"
                                                                         : "ring-1 ring-slate-200 hover:ring-miku/50"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 <Image
                                                                     src={getCharacterIconUrl(c.characterId)}
@@ -342,11 +340,10 @@ export default function ProfileClient() {
                                                 key={s.value}
                                                 onClick={() => setFormServer(s.value)}
                                                 disabled={isVerifying}
-                                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                                                    formServer === s.value
+                                                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${formServer === s.value
                                                         ? "bg-miku text-white shadow-md shadow-miku/20"
                                                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                }`}
+                                                    }`}
                                             >
                                                 {s.label}
                                             </button>
@@ -362,14 +359,14 @@ export default function ProfileClient() {
                                             </svg>
                                             <div>
                                                 <p className="text-xs font-medium text-red-700">{verifyError}</p>
-                                                <a
+                                                <ExternalLink
                                                     href="https://haruki.seiunx.com"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-miku hover:underline mt-1 inline-block"
                                                 >
                                                     前往 Haruki 工具箱 →
-                                                </a>
+                                                </ExternalLink>
                                             </div>
                                         </div>
                                     </div>
@@ -448,6 +445,24 @@ export default function ProfileClient() {
                                 <div>
                                     <div className="text-sm font-bold text-primary-text">控分计算器</div>
                                     <div className="text-xs text-slate-400">智能规划放置路线</div>
+                                </div>
+                            </div>
+                            <span className="text-xs font-medium text-miku group-hover:translate-x-0.5 transition-transform">前往 →</span>
+                        </Link>
+
+                        <Link
+                            href="/my-cards"
+                            className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:border-miku/30 hover:bg-miku/5 transition-all group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-lg bg-pink-100 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-bold text-primary-text">卡牌进度</div>
+                                    <div className="text-xs text-slate-400">查看卡牌收集进度</div>
                                 </div>
                             </div>
                             <span className="text-xs font-medium text-miku group-hover:translate-x-0.5 transition-transform">前往 →</span>
