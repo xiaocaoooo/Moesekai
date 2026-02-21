@@ -10,10 +10,14 @@ export interface MoesekaiAccount {
     id: string;                       // 唯一标识 = `${server}_${gameId}`
     gameId: string;                   // UID
     server: ServerType;
-    nickname: string;                 // 个性签名 (word) 或用户自定义
-    avatarCharacterId: number | null; // 头像角色ID（默认取等级最高角色）
+    nickname: string;                 // 个性签名 (word) 或用户自定义（已废弃，使用 userGamedata.name）
+    avatarCharacterId: number | null; // 头像角色ID（已废弃，使用 avatarCardId）
+    avatarCardId: number | null;      // 头像卡面ID（来自当前卡组的 leader）
     isApiPublic: boolean;
     userCharacters: UserCharacter[] | null;
+    userGamedata: UserGamedata | null;
+    userDecks: UserDeck[] | null;
+    uploadTime: number | null;        // 数据上传时间戳
     createdAt: number;
     updatedAt: number;
 }
@@ -24,11 +28,35 @@ export interface UserCharacter {
     totalExp: number;
 }
 
+export interface UserGamedata {
+    coin: number;
+    totalExp: number;
+    name: string;
+    exp: number;
+    userId: number;
+    deck: number;
+}
+
+export interface UserDeck {
+    deckId: number;
+    leader: number;
+    subLeader: number;
+    member1: number;
+    member2: number;
+    member3: number;
+    member4: number;
+    member5: number;
+    name: string;
+}
+
 export interface HarukiApiResult {
     success: boolean;
     error?: "NOT_FOUND" | "API_NOT_PUBLIC" | "NETWORK_ERROR";
     userProfile?: { word: string; userId: number };
     userCharacters?: UserCharacter[];
+    userGamedata?: UserGamedata;
+    userDecks?: UserDeck[];
+    uploadTime?: number;
 }
 
 const ACCOUNTS_KEY = "moesekai_accounts";
@@ -58,11 +86,18 @@ export function getTopCharacterId(characters: UserCharacter[]): number {
     return characters.reduce((top, c) => c.characterRank > top.characterRank ? c : top, characters[0]).characterId;
 }
 
+/** 获取当前卡组的 leader 卡面 ID */
+export function getLeaderCardId(userGamedata: UserGamedata | null, userDecks: UserDeck[] | null): number | null {
+    if (!userGamedata || !userDecks || userDecks.length === 0) return null;
+    const currentDeck = userDecks.find(d => d.deckId === userGamedata.deck);
+    return currentDeck ? currentDeck.leader : null;
+}
+
 // ==================== Haruki API ====================
 
 /** 调用 Haruki API 验证用户数据可用性 */
 export async function verifyHarukiApi(server: ServerType, gameId: string): Promise<HarukiApiResult> {
-    const url = `https://suite-api.haruki.seiunx.com/public/${server}/suite/${gameId}?key=userProfile,userCharacters`;
+    const url = `https://suite-api.haruki.seiunx.com/public/${server}/suite/${gameId}?key=userGamedata,userDecks,upload_time`;
     try {
         const res = await fetch(url);
         if (res.status === 404) {
@@ -75,16 +110,14 @@ export async function verifyHarukiApi(server: ServerType, gameId: string): Promi
             return { success: false, error: "NETWORK_ERROR" };
         }
         const data = await res.json();
-        if (!data.userProfile) {
+        if (!data.userGamedata) {
             return { success: false, error: "NOT_FOUND" };
         }
         return {
             success: true,
-            userProfile: {
-                word: data.userProfile.word || "",
-                userId: data.userProfile.userId,
-            },
-            userCharacters: data.userCharacters || [],
+            userGamedata: data.userGamedata,
+            userDecks: data.userDecks || [],
+            uploadTime: data.upload_time,
         };
     } catch {
         return { success: false, error: "NETWORK_ERROR" };
@@ -171,8 +204,12 @@ export function createAccount(
         server,
         nickname,
         avatarCharacterId,
+        avatarCardId: null,
         isApiPublic,
         userCharacters,
+        userGamedata: null,
+        userDecks: null,
+        uploadTime: null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
     };
@@ -242,8 +279,12 @@ function migrateFromLegacy(): MoesekaiAccount[] {
                     server: old.server || "jp",
                     nickname: old.nickname || "",
                     avatarCharacterId: null,
+                    avatarCardId: null,
                     isApiPublic: true,
                     userCharacters: null,
+                    userGamedata: null,
+                    userDecks: null,
+                    uploadTime: null,
                     createdAt: old.createdAt || Date.now(),
                     updatedAt: Date.now(),
                 };
@@ -263,8 +304,12 @@ function migrateFromLegacy(): MoesekaiAccount[] {
                     server,
                     nickname: "",
                     avatarCharacterId: null,
+                    avatarCardId: null,
                     isApiPublic: true,
                     userCharacters: null,
+                    userGamedata: null,
+                    userDecks: null,
+                    uploadTime: null,
                     createdAt: Date.now(),
                     updatedAt: Date.now(),
                 };

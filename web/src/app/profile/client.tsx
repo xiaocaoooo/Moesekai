@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import MainLayout from "@/components/MainLayout";
 import ExternalLink from "@/components/ExternalLink";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useCardThumbnail } from "@/hooks/useCardThumbnail";
 import {
     getAccounts,
     getActiveAccount,
@@ -16,6 +18,7 @@ import {
     verifyHarukiApi,
     getCharacterIconUrl,
     getTopCharacterId,
+    getLeaderCardId,
     SERVER_LABELS,
     type MoesekaiAccount,
     type ServerType,
@@ -26,6 +29,28 @@ const SERVER_OPTIONS: { value: ServerType; label: string }[] = [
     { value: "jp", label: "日服 (JP)" },
     { value: "tw", label: "繁中服 (TW)" },
 ];
+
+// AccountAvatar 组件 - 显示账号头像（卡面缩略图或角色图标）
+function AccountAvatar({ account }: { account: MoesekaiAccount }) {
+    const { assetSource } = useTheme();
+    const cardThumbnail = useCardThumbnail(account.avatarCardId, assetSource);
+    
+    // 如果有卡面缩略图，使用卡面；否则回退到角色图标
+    const avatarUrl = cardThumbnail || getCharacterIconUrl(
+        account.avatarCharacterId || 
+        (account.userCharacters ? getTopCharacterId(account.userCharacters) : 21)
+    );
+    
+    return (
+        <Image
+            src={avatarUrl}
+            alt=""
+            fill
+            className="object-cover"
+            unoptimized
+        />
+    );
+}
 
 export default function ProfileClient() {
     const [accounts, setAccounts] = useState<MoesekaiAccount[]>([]);
@@ -38,9 +63,6 @@ export default function ProfileClient() {
     const [formServer, setFormServer] = useState<ServerType>("jp");
     const [isVerifying, setIsVerifying] = useState(false);
     const [verifyError, setVerifyError] = useState<string | null>(null);
-
-    // Edit avatar
-    const [editingAvatarId, setEditingAvatarId] = useState<string | null>(null);
 
     // Confirm clear
     const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -56,6 +78,39 @@ export default function ProfileClient() {
     useEffect(() => {
         reload();
         setLoaded(true);
+        
+        // 自动刷新没有 userGamedata 的旧账号
+        const refreshOldAccounts = async () => {
+            const accs = getAccounts();
+            for (const acc of accs) {
+                if (!acc.userGamedata) {
+                    console.log(`刷新旧账号数据: ${acc.gameId} (${acc.server})`);
+                    const result = await verifyHarukiApi(acc.server, acc.gameId);
+                    
+                    if (!result.success) {
+                        console.warn(`账号 ${acc.gameId} 刷新失败，删除账号`);
+                        removeAccount(acc.id);
+                    } else {
+                        const userGamedata = result.userGamedata || null;
+                        const userDecks = result.userDecks || null;
+                        const uploadTime = result.uploadTime || null;
+                        const avatarCardId = getLeaderCardId(userGamedata, userDecks);
+                        
+                        updateAccount(acc.id, {
+                            userGamedata,
+                            userDecks,
+                            uploadTime,
+                            avatarCardId,
+                            nickname: userGamedata?.name || acc.nickname,
+                        });
+                    }
+                }
+            }
+            // 刷新完成后重新加载
+            reload();
+        };
+        
+        refreshOldAccounts();
     }, [reload]);
 
     const handleAddAccount = useCallback(async () => {
@@ -77,11 +132,22 @@ export default function ProfileClient() {
             return;
         }
 
-        const chars = result.userCharacters || [];
-        const topCharId = getTopCharacterId(chars);
-        const nickname = result.userProfile?.word || "";
+        const userGamedata = result.userGamedata || null;
+        const userDecks = result.userDecks || null;
+        const uploadTime = result.uploadTime || null;
+        
+        // 获取 leader 卡面 ID
+        const avatarCardId = getLeaderCardId(userGamedata, userDecks);
+        const nickname = userGamedata?.name || "";
 
-        createAccount(formGameId.trim(), formServer, nickname, topCharId, chars, true);
+        // 创建账号并设置新字段
+        const account = createAccount(formGameId.trim(), formServer, nickname, null, null, true);
+        updateAccount(account.id, {
+            userGamedata,
+            userDecks,
+            uploadTime,
+            avatarCardId,
+        });
 
         setFormGameId("");
         setFormServer("jp");
@@ -104,12 +170,6 @@ export default function ProfileClient() {
     const handleClearAll = useCallback(() => {
         clearAllAccounts();
         setShowClearConfirm(false);
-        reload();
-    }, [reload]);
-
-    const handleChangeAvatar = useCallback((accountId: string, characterId: number) => {
-        updateAccount(accountId, { avatarCharacterId: characterId });
-        setEditingAvatarId(null);
         reload();
     }, [reload]);
 
@@ -179,9 +239,9 @@ export default function ProfileClient() {
                         <div className="space-y-3">
                             {accounts.map((acc) => {
                                 const isActive = acc.id === activeId;
-                                const charId = acc.avatarCharacterId || (acc.userCharacters ? getTopCharacterId(acc.userCharacters) : 21);
-                                const isEditingAvatar = editingAvatarId === acc.id;
-
+                                // 优先使用 userGamedata.name，否则使用 nickname
+                                const displayName = acc.userGamedata?.name || acc.nickname;
+                                
                                 return (
                                     <div
                                         key={acc.id}
@@ -191,31 +251,18 @@ export default function ProfileClient() {
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            {/* Avatar */}
-                                            <button
-                                                onClick={() => setEditingAvatarId(isEditingAvatar ? null : acc.id)}
-                                                className={`relative w-12 h-12 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 ring-2 ring-offset-1 hover:ring-miku/50 transition-all ${isActive ? "ring-miku/40" : "ring-slate-200"}`}
-                                                title="点击更换头像"
-                                            >
-                                                <Image
-                                                    src={getCharacterIconUrl(charId)}
-                                                    alt=""
-                                                    fill
-                                                    className="object-cover"
-                                                    unoptimized
-                                                />
-                                                <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                    <svg className="w-4 h-4 text-white opacity-0 hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    </svg>
-                                                </div>
-                                            </button>
+                                            {/* Avatar - 使用卡面缩略图 */}
+                                            <div className={`relative w-12 h-12 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 ring-2 ring-offset-1 transition-all ${isActive ? "ring-miku/40" : "ring-slate-200"}`}>
+                                                <AccountAvatar account={acc} />
+                                            </div>
 
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className="font-mono text-sm font-bold text-primary-text">{acc.gameId}</span>
+                                                    {displayName && (
+                                                        <span className="text-sm font-bold text-primary-text truncate">{displayName}</span>
+                                                    )}
+                                                    <span className="font-mono text-xs text-slate-500">{acc.gameId}</span>
                                                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${isActive ? "bg-miku/20 text-miku" : "bg-slate-100 text-slate-500"
                                                         }`}>
                                                         {SERVER_LABELS[acc.server]}
@@ -226,12 +273,19 @@ export default function ProfileClient() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                {acc.nickname && (
-                                                    <p className="text-xs text-slate-500 mt-0.5 truncate">{acc.nickname}</p>
-                                                )}
-                                                <p className="text-[10px] text-slate-400 mt-0.5">
-                                                    添加于 {new Date(acc.createdAt).toLocaleDateString()}
-                                                </p>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <p className="text-[10px] text-slate-400">
+                                                        添加于 {new Date(acc.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                    {acc.uploadTime && (
+                                                        <>
+                                                            <span className="text-[10px] text-slate-300">•</span>
+                                                            <p className="text-[10px] text-slate-400">
+                                                                数据更新于 {new Date(acc.uploadTime * 1000).toLocaleString()}
+                                                            </p>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             {/* Actions */}
@@ -272,39 +326,6 @@ export default function ProfileClient() {
                                                 )}
                                             </div>
                                         </div>
-
-                                        {/* Avatar Picker */}
-                                        {isEditingAvatar && acc.userCharacters && acc.userCharacters.length > 0 && (
-                                            <div className="mt-3 pt-3 border-t border-slate-100">
-                                                <p className="text-[10px] text-slate-400 mb-2">选择头像角色（按等级排序）</p>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {[...acc.userCharacters]
-                                                        .sort((a, b) => b.characterRank - a.characterRank)
-                                                        .slice(0, 26)
-                                                        .map((c) => (
-                                                            <button
-                                                                key={c.characterId}
-                                                                onClick={() => handleChangeAvatar(acc.id, c.characterId)}
-                                                                className={`relative w-9 h-9 rounded-full overflow-hidden transition-all ${charId === c.characterId
-                                                                        ? "ring-2 ring-miku shadow-md"
-                                                                        : "ring-1 ring-slate-200 hover:ring-miku/50"
-                                                                    }`}
-                                                            >
-                                                                <Image
-                                                                    src={getCharacterIconUrl(c.characterId)}
-                                                                    alt=""
-                                                                    fill
-                                                                    className="object-cover"
-                                                                    unoptimized
-                                                                />
-                                                                <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[7px] text-center leading-tight">
-                                                                    {c.characterRank}
-                                                                </div>
-                                                            </button>
-                                                        ))}
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 );
                             })}
