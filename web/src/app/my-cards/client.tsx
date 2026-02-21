@@ -77,6 +77,7 @@ function MyCardsContent() {
     const [error, setError] = useState<string | null>(null);
     const [userError, setUserError] = useState<string | null>(null);
     const [isTwFallback, setIsTwFallback] = useState(false);
+    const [uploadTime, setUploadTime] = useState<string | null>(null);
 
     // Filter states (same as /cards)
     const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
@@ -189,7 +190,7 @@ function MyCardsContent() {
             setUserError(null);
 
             const { server, gameId } = activeAccount!;
-            const url = `https://suite-api.haruki.seiunx.com/public/${server}/suite/${gameId}?key=userCards`;
+            const url = `https://suite-api.haruki.seiunx.com/public/${server}/suite/${gameId}?key=userCards,upload_time`;
 
             try {
                 const res = await fetch(url);
@@ -220,6 +221,12 @@ function MyCardsContent() {
                     // Try to find any array property in the response
                     const arrayProp = Object.values(data).find(v => Array.isArray(v));
                     cards = (arrayProp as UserCard[]) || [];
+                }
+                // Extract upload_time
+                if (data.upload_time) {
+                    setUploadTime(data.upload_time);
+                } else {
+                    setUploadTime(null);
                 }
                 console.log(`[MyCards] Loaded ${cards.length} user cards from API`);
                 const map = new Map<number, UserCard>();
@@ -432,7 +439,14 @@ function MyCardsContent() {
             {!isLoading && !isFetchingUser && userCards.size > 0 && (
                 <div className="mb-6 glass-card p-4 rounded-2xl">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-primary-text">收集进度</span>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-primary-text">收集进度</span>
+                            {uploadTime && (
+                                <span className="text-[11px] text-slate-400" title="数据上传时间">
+                                    数据时间: {new Date(uploadTime).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                            )}
+                        </div>
                         <span className="text-sm font-mono font-bold text-miku">
                             {progressStats.owned} / {progressStats.total}
                             <span className="ml-2 text-xs text-slate-400">({progressStats.pct}%)</span>
