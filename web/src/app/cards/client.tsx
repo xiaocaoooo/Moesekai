@@ -284,8 +284,8 @@ function CardsContent() {
     }, [resetDisplayCount]);
 
     // Sort change handler
-    const handleSortChange = useCallback((newSortBy: "id" | "releaseAt" | "rarity", newSortOrder: "asc" | "desc") => {
-        setSortBy(newSortBy);
+    const handleSortChange = useCallback((newSortBy: string, newSortOrder: "asc" | "desc") => {
+        setSortBy(newSortBy as "id" | "releaseAt" | "rarity");
         setSortOrder(newSortOrder);
         resetDisplayCount();
     }, [resetDisplayCount]);
