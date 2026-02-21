@@ -305,7 +305,7 @@ export default function Home() {
             <div className="h-6 w-1 rounded-full bg-miku"></div>
             <h2 className="text-xl font-bold text-primary-text opacity-80">友链</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Link 1: SnowyBot */}
             <ExternalLink href="https://bot.pjsk.moe" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
               <div className="relative z-10 h-full flex items-center justify-between px-6">
@@ -333,12 +333,25 @@ export default function Home() {
               <div className="relative z-10 h-full flex items-center justify-between px-6">
                 <div className="text-left">
                   <h3 className="text-md font-bold text-primary-text">Uni Viewer</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Uni PJSK</p>
+                </div>
+                <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              </div>
+            </ExternalLink>
+
+            {/* Link 4: 33kit */}
+            <ExternalLink href="https://3-3.dev" target="_blank" className="relative group overflow-hidden rounded-xl h-20 shadow-sm hover:shadow-lg transition-shadow bg-white border border-slate-100">
+              <div className="relative z-10 h-full flex items-center justify-between px-6">
+                <div className="text-left">
+                  <h3 className="text-md font-bold text-primary-text">33kit</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">3-3.dev</p>
                 </div>
                 <svg className="w-5 h-5 text-slate-300 group-hover:text-miku transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </div>
             </ExternalLink>
           </div>
         </div>
+
 
         {/* Credits Section (鸣谢) */}
         <div className="w-full max-w-5xl mt-8 pt-8 border-t border-slate-200/50">
