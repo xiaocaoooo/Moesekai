@@ -10,34 +10,36 @@ import {
     MUSIC_CATEGORY_COLORS,
 } from "@/types/music";
 
-interface MusicFiltersProps {
+interface MyMusicFiltersProps {
     // Tag filter
     selectedTag: MusicTagType;
     onTagChange: (tag: MusicTagType) => void;
     // Category filter
     selectedCategories: MusicCategoryType[];
     onCategoryChange: (categories: MusicCategoryType[]) => void;
-    // Event filter
-    hasEventOnly: boolean;
-    onHasEventOnlyChange: (checked: boolean) => void;
+    // Difficulty filter
+    selectedDifficulty: string;
+    onDifficultyChange: (difficulty: string) => void;
+    // Completion filter
+    completionFilter: "all" | "no_fc" | "no_ap";
+    onCompletionFilterChange: (filter: "all" | "no_fc" | "no_ap") => void;
     // Search
     searchQuery: string;
     onSearchChange: (query: string) => void;
-    // Difficulty filter
-    selectedDifficulty?: string;
-    onDifficultyChange?: (difficulty: string) => void;
     // Sort
-    sortBy: "publishedAt" | "id" | "level";
+    sortBy: "publishedAt" | "id" | "level" | "completion";
     sortOrder: "asc" | "desc";
-    onSortChange: (sortBy: "publishedAt" | "id" | "level", sortOrder: "asc" | "desc") => void;
+    onSortChange: (sortBy: "publishedAt" | "id" | "level" | "completion", sortOrder: "asc" | "desc") => void;
     // Reset
     onReset: () => void;
     // Stats
     totalMusics: number;
     filteredMusics: number;
+    // User data availability
+    hasUserData: boolean;
 }
 
-// Unit icon mapping for tags (local icons to match card filters)
+// Unit icon mapping for tags
 const TAG_ICONS: Partial<Record<MusicTagType, string>> = {
     vocaloid: "/data/icon/vs.webp",
     theme_park: "/data/icon/wxs.webp",
@@ -47,39 +49,41 @@ const TAG_ICONS: Partial<Record<MusicTagType, string>> = {
     light_music_club: "/data/icon/ln.webp",
 };
 
+const DIFFICULTY_OPTIONS = [
+    { value: "easy", label: "EASY" },
+    { value: "normal", label: "NORMAL" },
+    { value: "hard", label: "HARD" },
+    { value: "expert", label: "EXPERT" },
+    { value: "master", label: "MASTER" },
+    { value: "append", label: "APPEND" },
+];
+
 const SORT_OPTIONS = [
+    { id: "completion", label: "完成度" },
     { id: "publishedAt", label: "发布日期" },
     { id: "id", label: "ID" },
     { id: "level", label: "定数" },
 ];
 
-const DIFFICULTY_OPTIONS = [
-    { id: "easy", label: "EASY", color: "from-green-400 to-green-500" },
-    { id: "normal", label: "NORMAL", color: "from-blue-400 to-blue-500" },
-    { id: "hard", label: "HARD", color: "from-yellow-400 to-yellow-500" },
-    { id: "expert", label: "EXPERT", color: "from-red-400 to-red-500" },
-    { id: "master", label: "MASTER", color: "from-purple-500 to-purple-600" },
-    { id: "append", label: "APPEND", color: "from-pink-500 to-pink-600" },
-];
-
-export default function MusicFilters({
+export default function MyMusicFilters({
     selectedTag,
     onTagChange,
     selectedCategories,
     onCategoryChange,
-    hasEventOnly,
-    onHasEventOnlyChange,
-    searchQuery,
-    onSearchChange,
     selectedDifficulty,
     onDifficultyChange,
+    completionFilter,
+    onCompletionFilterChange,
+    searchQuery,
+    onSearchChange,
     sortBy,
     sortOrder,
     onSortChange,
     onReset,
     totalMusics,
     filteredMusics,
-}: MusicFiltersProps) {
+    hasUserData,
+}: MyMusicFiltersProps) {
 
     const toggleCategory = (cat: MusicCategoryType) => {
         if (selectedCategories.includes(cat)) {
@@ -92,7 +96,7 @@ export default function MusicFilters({
     const hasActiveFilters =
         selectedTag !== "all" ||
         selectedCategories.length > 0 ||
-        hasEventOnly ||
+        completionFilter !== "all" ||
         searchQuery.trim() !== "";
 
     return (
@@ -106,10 +110,32 @@ export default function MusicFilters({
             sortOptions={SORT_OPTIONS}
             sortBy={sortBy}
             sortOrder={sortOrder}
-            onSortChange={(id, order) => onSortChange(id as "publishedAt" | "id" | "level", order)}
+            onSortChange={(id, order) => onSortChange(id as "publishedAt" | "id" | "level" | "completion", order)}
             hasActiveFilters={hasActiveFilters}
             onReset={onReset}
         >
+            {/* Difficulty Selection */}
+            <FilterSection label="难度">
+                <div className="grid grid-cols-3 gap-2">
+                    {DIFFICULTY_OPTIONS.map((diff) => {
+                        const isSelected = selectedDifficulty === diff.value;
+                        return (
+                            <button
+                                key={diff.value}
+                                onClick={() => onDifficultyChange(diff.value)}
+                                className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                                    isSelected
+                                        ? "bg-miku text-white shadow-md"
+                                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                }`}
+                            >
+                                {diff.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </FilterSection>
+
             {/* Tag Filter */}
             <FilterSection label="乐曲标签">
                 <div className="flex flex-wrap gap-2">
@@ -121,10 +147,11 @@ export default function MusicFilters({
                             <button
                                 key={tag}
                                 onClick={() => onTagChange(tag)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${isSelected
-                                    ? "ring-2 ring-miku shadow-lg bg-white"
-                                    : "hover:bg-slate-100 border border-slate-200 bg-slate-50/50"
-                                    }`}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                                    isSelected
+                                        ? "ring-2 ring-miku shadow-lg bg-white"
+                                        : "hover:bg-slate-100 border border-slate-200 bg-slate-50/50"
+                                }`}
                                 title={MUSIC_TAG_NAMES[tag]}
                             >
                                 {hasIcon && (
@@ -156,10 +183,11 @@ export default function MusicFilters({
                             <button
                                 key={cat}
                                 onClick={() => toggleCategory(cat)}
-                                className={`h-9 px-3 rounded-xl transition-all flex items-center justify-center border ${isSelected
-                                    ? "text-white shadow-lg border-transparent"
-                                    : "hover:bg-slate-100 border-slate-200 bg-slate-50/50 text-slate-600"
-                                    }`}
+                                className={`h-9 px-3 rounded-xl transition-all flex items-center justify-center border ${
+                                    isSelected
+                                        ? "text-white shadow-lg border-transparent"
+                                        : "hover:bg-slate-100 border-slate-200 bg-slate-50/50 text-slate-600"
+                                }`}
                                 style={
                                     isSelected
                                         ? { backgroundColor: MUSIC_CATEGORY_COLORS[cat] }
@@ -175,38 +203,43 @@ export default function MusicFilters({
                 </div>
             </FilterSection>
 
-            {/* Difficulty Filter - Only show when sorting by level */}
-            {sortBy === "level" && selectedDifficulty && onDifficultyChange && (
-                <FilterSection label="难度选择">
-                    <div className="grid grid-cols-2 gap-2">
-                        {DIFFICULTY_OPTIONS.map((diff) => {
-                            const isSelected = selectedDifficulty === diff.id;
-                            return (
-                                <button
-                                    key={diff.id}
-                                    onClick={() => onDifficultyChange(diff.id)}
-                                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                                        isSelected
-                                            ? `bg-gradient-to-r ${diff.color} text-white shadow-lg`
-                                            : "bg-slate-50/50 border border-slate-200 text-slate-600 hover:bg-slate-100"
-                                    }`}
-                                >
-                                    {diff.label}
-                                </button>
-                            );
-                        })}
+            {/* Completion Filter */}
+            {hasUserData && (
+                <FilterSection label="完成度筛选">
+                    <div className="grid grid-cols-3 gap-2">
+                        <button
+                            onClick={() => onCompletionFilterChange("all")}
+                            className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                                completionFilter === "all"
+                                    ? "bg-miku text-white shadow-md"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                        >
+                            全部
+                        </button>
+                        <button
+                            onClick={() => onCompletionFilterChange("no_fc")}
+                            className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                                completionFilter === "no_fc"
+                                    ? "bg-miku text-white shadow-md"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                        >
+                            未FC
+                        </button>
+                        <button
+                            onClick={() => onCompletionFilterChange("no_ap")}
+                            className={`px-2 py-2 rounded-lg text-xs font-bold transition-all ${
+                                completionFilter === "no_ap"
+                                    ? "bg-miku text-white shadow-md"
+                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                            }`}
+                        >
+                            未AP
+                        </button>
                     </div>
                 </FilterSection>
             )}
-
-            {/* Other Filters (Event Only) */}
-            <FilterSection label="其他筛选">
-                <FilterToggle
-                    selected={hasEventOnly}
-                    onClick={() => onHasEventOnlyChange(!hasEventOnly)}
-                    label="仅显示活动歌曲"
-                />
-            </FilterSection>
         </BaseFilters>
     );
 }
