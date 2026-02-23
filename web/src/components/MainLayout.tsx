@@ -50,7 +50,7 @@ export default function MainLayout({
     };
 
     return (
-        <main className="min-h-screen relative selection:bg-miku selection:text-white font-sans flex flex-col overflow-x-hidden">
+        <main className="min-h-screen relative selection:bg-miku selection:text-white font-sans flex flex-col">
             {/* Loading Animation */}
             {showLoader && <SekaiLoader />}
 
@@ -66,14 +66,14 @@ export default function MainLayout({
                 <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
 
                 {/* Main Content - 添加左边距以适应桌面端侧边栏 */}
-                <div className={`flex-grow relative z-10 w-full min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'
+                <div className={`flex-grow relative z-10 w-full min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : 'md:pl-0'
                     }`}>
                     {children}
                 </div>
             </div>
 
             {/* Footer */}
-            <div className={`relative z-[5] transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'
+            <div className={`relative z-[5] transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : 'md:pl-0'
                 }`}>
                 <MainFooter />
             </div>
