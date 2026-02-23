@@ -30,6 +30,7 @@ function CardsContent() {
 
     // Initialize filter states from URL params
     const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
+    const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
     const [selectedAttrs, setSelectedAttrs] = useState<CardAttribute[]>([]);
     const [selectedRarities, setSelectedRarities] = useState<CardRarityType[]>([]);
     const [selectedSupplyTypes, setSelectedSupplyTypes] = useState<string[]>([]);
@@ -54,6 +55,7 @@ function CardsContent() {
     // Initialize from URL params first, then fallback to sessionStorage
     useEffect(() => {
         const chars = searchParams.get("characters");
+        const units = searchParams.get("units");
         const attrs = searchParams.get("attrs");
         const rarities = searchParams.get("rarities");
         const supplyTypes = searchParams.get("supplyTypes");
@@ -63,10 +65,11 @@ function CardsContent() {
         const order = searchParams.get("sortOrder");
 
         // If URL has params, use them
-        const hasUrlParams = chars || attrs || rarities || supplyTypes || supportUnits || search || sort || order;
+        const hasUrlParams = chars || units || attrs || rarities || supplyTypes || supportUnits || search || sort || order;
 
         if (hasUrlParams) {
             if (chars) setSelectedCharacters(chars.split(",").map(Number));
+            if (units) setSelectedUnitIds(units.split(","));
             if (attrs) setSelectedAttrs(attrs.split(",") as CardAttribute[]);
             if (rarities) setSelectedRarities(rarities.split(",") as CardRarityType[]);
             if (supplyTypes) setSelectedSupplyTypes(supplyTypes.split(","));
@@ -81,6 +84,7 @@ function CardsContent() {
                 if (saved) {
                     const filters = JSON.parse(saved);
                     if (filters.characters?.length) setSelectedCharacters(filters.characters);
+                    if (filters.units?.length) setSelectedUnitIds(filters.units);
                     if (filters.attrs?.length) setSelectedAttrs(filters.attrs);
                     if (filters.rarities?.length) setSelectedRarities(filters.rarities);
                     if (filters.supplyTypes?.length) setSelectedSupplyTypes(filters.supplyTypes);
@@ -106,6 +110,7 @@ function CardsContent() {
         // Save to sessionStorage
         const filters = {
             characters: selectedCharacters,
+            units: selectedUnitIds,
             attrs: selectedAttrs,
             rarities: selectedRarities,
             supplyTypes: selectedSupplyTypes,
@@ -123,6 +128,7 @@ function CardsContent() {
         // Update URL
         const params = new URLSearchParams();
         if (selectedCharacters.length > 0) params.set("characters", selectedCharacters.join(","));
+        if (selectedUnitIds.length > 0) params.set("units", selectedUnitIds.join(","));
         if (selectedAttrs.length > 0) params.set("attrs", selectedAttrs.join(","));
         if (selectedRarities.length > 0) params.set("rarities", selectedRarities.join(","));
         if (selectedSupplyTypes.length > 0) params.set("supplyTypes", selectedSupplyTypes.join(","));
@@ -137,7 +143,7 @@ function CardsContent() {
         const queryString = params.toString();
         const newUrl = queryString ? `/cards?${queryString}` : "/cards";
         router.replace(newUrl, { scroll: false });
-    }, [selectedCharacters, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, router, filtersInitialized, isScreenshotMode]);
+    }, [selectedCharacters, selectedUnitIds, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, router, filtersInitialized, isScreenshotMode]);
 
     // Fetch cards data
     useEffect(() => {
@@ -273,6 +279,7 @@ function CardsContent() {
     // Reset filters
     const resetFilters = useCallback(() => {
         setSelectedCharacters([]);
+        setSelectedUnitIds([]);
         setSelectedAttrs([]);
         setSelectedRarities([]);
         setSelectedSupplyTypes([]);
@@ -327,6 +334,8 @@ function CardsContent() {
                         <CardFilters
                             selectedCharacters={selectedCharacters}
                             onCharacterChange={setSelectedCharacters}
+                            selectedUnitIds={selectedUnitIds}
+                            onUnitIdsChange={setSelectedUnitIds}
                             selectedAttrs={selectedAttrs}
                             onAttrChange={setSelectedAttrs}
                             selectedRarities={selectedRarities}

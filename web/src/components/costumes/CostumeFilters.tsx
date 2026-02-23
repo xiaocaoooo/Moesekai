@@ -28,6 +28,10 @@ interface CostumeFiltersProps {
     selectedCharacters: number[];
     onCharacterChange: (chars: number[]) => void;
 
+    // Unit filter
+    selectedUnitIds: string[];
+    onUnitIdsChange: (units: string[]) => void;
+
     // Part filter
     selectedPartTypes: string[];
     onPartTypeChange: (types: string[]) => void;
@@ -68,6 +72,8 @@ interface CostumeFiltersProps {
 export default function CostumeFilters({
     selectedCharacters,
     onCharacterChange,
+    selectedUnitIds,
+    onUnitIdsChange,
     selectedPartTypes,
     onPartTypeChange,
     selectedSources,
@@ -87,7 +93,6 @@ export default function CostumeFilters({
     totalCount,
     filteredCount,
 }: CostumeFiltersProps) {
-    const [selectedUnitIds, setSelectedUnitIds] = React.useState<string[]>([]);
 
     const toggleCharacter = (id: number) => {
         if (selectedCharacters.includes(id)) {
@@ -134,11 +139,13 @@ export default function CostumeFilters({
         if (!unit) return;
 
         if (selectedUnitIds.includes(unitId)) {
-            setSelectedUnitIds(selectedUnitIds.filter(id => id !== unitId));
+            // Remove this unit and its characters
+            onUnitIdsChange(selectedUnitIds.filter(id => id !== unitId));
             const newChars = selectedCharacters.filter(c => !unit.charIds.includes(c));
             onCharacterChange(newChars);
         } else {
-            setSelectedUnitIds([...selectedUnitIds, unitId]);
+            // Add this unit and its characters
+            onUnitIdsChange([...selectedUnitIds, unitId]);
             const newChars = [...new Set([...selectedCharacters, ...unit.charIds])];
             onCharacterChange(newChars);
         }
@@ -159,7 +166,6 @@ export default function CostumeFilters({
 
     const handleReset = () => {
         onReset();
-        setSelectedUnitIds([]);
     };
 
     return (

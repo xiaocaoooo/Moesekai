@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import MainLayout from "@/components/MainLayout";
 import ExternalLink from "@/components/ExternalLink";
 import MyMusicFilters from "@/components/music/MyMusicFilters";
@@ -29,6 +30,7 @@ import {
     MusicCategoryType,
     IMusicTagInfo,
 } from "@/types/music";
+import { useScrollRestore } from "@/hooks/useScrollRestore";
 
 const SERVER_OPTIONS: { value: ServerType; label: string }[] = [
     { value: "cn", label: "简中服" },
@@ -64,11 +66,27 @@ interface UserMusicResult {
 
 type PlayResult = "AP" | "FC" | "C" | "";
 
+// Format upload time in a way that's consistent between server and client
+function formatUploadTime(uploadTime: string): string {
+    try {
+        const date = new Date(uploadTime);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        return `${month}-${day} ${hour}:${minute}`;
+    } catch {
+        return uploadTime;
+    }
+}
+
 // ==================== Main Component ====================
 
 function MyMusicsContent() {
     // Theme context for asset source
     const { assetSource } = useTheme();
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     // Account state
     const [accounts, setAccountsList] = useState<MoesekaiAccount[]>([]);
@@ -86,6 +104,7 @@ function MyMusicsContent() {
     const [userError, setUserError] = useState<string | null>(null);
     const [uploadTime, setUploadTime] = useState<string | null>(null);
     const [isTwFallback, setIsTwFallback] = useState(false);
+    const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // Filter states
     const [searchQuery, setSearchQuery] = useState("");
@@ -96,10 +115,92 @@ function MyMusicsContent() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [completionFilter, setCompletionFilter] = useState<"all" | "no_fc" | "no_ap">("all");
 
-    // Pagination
-    const [displayCount, setDisplayCount] = useState(30);
+    // Pagination with scroll restoration
+    const { displayCount, loadMore, resetDisplayCount } = useScrollRestore({
+        storageKey: "my-musics",
+        defaultDisplayCount: 30,
+        increment: 30,
+        isReady: !isLoading && !isFetchingUser,
+    });
 
     const allDifficulties = ["easy", "normal", "hard", "expert", "master", "append"];
+
+    // Storage key
+    const STORAGE_KEY = "my_musics_filters";
+
+    // Initialize from URL params first, then fallback to sessionStorage
+    useEffect(() => {
+        const tag = searchParams.get("tag");
+        const categories = searchParams.get("categories");
+        const difficulty = searchParams.get("difficulty");
+        const search = searchParams.get("search");
+        const sort = searchParams.get("sortBy");
+        const order = searchParams.get("sortOrder");
+        const completion = searchParams.get("completion");
+
+        const hasUrlParams = tag || categories || difficulty || search || sort || order || completion;
+
+        if (hasUrlParams) {
+            if (tag) setSelectedTag(tag as MusicTagType);
+            if (categories) setSelectedCategories(categories.split(",") as MusicCategoryType[]);
+            if (difficulty) setSelectedDifficulty(difficulty);
+            if (search) setSearchQuery(search);
+            if (sort) setSortBy(sort as any);
+            if (order) setSortOrder(order as "asc" | "desc");
+            if (completion) setCompletionFilter(completion as any);
+        } else {
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const filters = JSON.parse(saved);
+                    if (filters.tag) setSelectedTag(filters.tag);
+                    if (filters.categories?.length) setSelectedCategories(filters.categories);
+                    if (filters.difficulty) setSelectedDifficulty(filters.difficulty);
+                    if (filters.search) setSearchQuery(filters.search);
+                    if (filters.sortBy) setSortBy(filters.sortBy);
+                    if (filters.sortOrder) setSortOrder(filters.sortOrder);
+                    if (filters.completionFilter) setCompletionFilter(filters.completionFilter);
+                }
+            } catch (e) {
+                console.log("Could not restore filters from sessionStorage");
+            }
+        }
+        setFiltersInitialized(true);
+    }, []);
+
+    // Save to sessionStorage and update URL when filters change
+    useEffect(() => {
+        if (!filtersInitialized) return;
+
+        const filters = {
+            tag: selectedTag,
+            categories: selectedCategories,
+            difficulty: selectedDifficulty,
+            search: searchQuery,
+            sortBy,
+            sortOrder,
+            completionFilter,
+        };
+
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+        } catch (e) {
+            console.log("Could not save filters to sessionStorage");
+        }
+
+        const params = new URLSearchParams();
+        if (selectedTag !== "all") params.set("tag", selectedTag);
+        if (selectedCategories.length > 0) params.set("categories", selectedCategories.join(","));
+        if (selectedDifficulty !== "master") params.set("difficulty", selectedDifficulty);
+        if (searchQuery) params.set("search", searchQuery);
+        if (sortBy !== "level") params.set("sortBy", sortBy);
+        if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
+        if (completionFilter !== "all") params.set("completion", completionFilter);
+
+        const queryString = params.toString();
+        const newUrl = queryString ? `/my-musics?${queryString}` : "/my-musics";
+        router.replace(newUrl, { scroll: false });
+    }, [selectedTag, selectedCategories, selectedDifficulty, searchQuery, sortBy, sortOrder, completionFilter, filtersInitialized, router]);
 
     // Load accounts
     useEffect(() => {
@@ -405,14 +506,14 @@ function MyMusicsContent() {
         if (sortBy !== "level") {
             return musics.map(m => ({ type: 'music' as const, data: m }));
         }
-        
+
         // Group by level and insert separators
         const result: Array<{ type: 'music' | 'separator', data: Music | { level: number, difficulty: string } }> = [];
         let lastLevel: number | null = null;
-        
+
         for (const music of musics) {
             const level = musicDifficultiesMap[music.id]?.[selectedDifficulty] || 0;
-            
+
             if (level !== lastLevel) {
                 result.push({
                     type: 'separator',
@@ -420,16 +521,12 @@ function MyMusicsContent() {
                 });
                 lastLevel = level;
             }
-            
+
             result.push({ type: 'music', data: music });
         }
-        
+
         return result;
     }, [filteredMusics, displayCount, sortBy, musicDifficultiesMap, selectedDifficulty]);
-
-    const loadMore = useCallback(() => {
-        setDisplayCount(prev => prev + 30);
-    }, []);
 
     const resetFilters = useCallback(() => {
         setSearchQuery("");
@@ -439,8 +536,8 @@ function MyMusicsContent() {
         setSortBy("level");
         setSortOrder("desc");
         setCompletionFilter("all");
-        setDisplayCount(30);
-    }, []);
+        resetDisplayCount();
+    }, [resetDisplayCount]);
 
     const handleAccountSelect = useCallback((acc: MoesekaiAccount) => {
         setActiveAccount(acc.id);
@@ -538,7 +635,7 @@ function MyMusicsContent() {
                             </span>
                             {uploadTime && (
                                 <span className="text-[11px] text-slate-400" title="数据上传时间">
-                                    数据时间: {new Date(uploadTime).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                                    数据时间: {formatUploadTime(uploadTime)}
                                 </span>
                             )}
                         </div>
@@ -588,6 +685,7 @@ function MyMusicsContent() {
                         onSortChange={(newSortBy, newSortOrder) => {
                             setSortBy(newSortBy);
                             setSortOrder(newSortOrder);
+                            resetDisplayCount();
                         }}
                         onReset={resetFilters}
                         totalMusics={allMusics.length}

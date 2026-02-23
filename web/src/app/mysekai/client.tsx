@@ -246,18 +246,20 @@ function MysekaiContent() {
         const subGenre = searchParams.get("subGenre");
         const tag = searchParams.get("tag");
         const chars = searchParams.get("characters");
+        const units = searchParams.get("units");
         const search = searchParams.get("search");
         const sort = searchParams.get("sortBy");
         const order = searchParams.get("sortOrder");
 
         // If URL has params, use them
-        const hasUrlParams = genre || subGenre || tag || chars || search || sort || order;
+        const hasUrlParams = genre || subGenre || tag || chars || units || search || sort || order;
 
         if (hasUrlParams) {
             if (genre) setSelectedGenre(Number(genre));
             if (subGenre) setSelectedSubGenre(Number(subGenre));
             if (tag) setSelectedTag(Number(tag));
             if (chars) setSelectedCharacters(chars.split(",").map(Number));
+            if (units) setSelectedUnitIds(units.split(","));
             if (search) setSearchQuery(search);
             if (sort) setSortBy(sort);
             if (order) setSortOrder(order as "asc" | "desc");
@@ -271,6 +273,7 @@ function MysekaiContent() {
                     if (filters.subGenre !== undefined && filters.subGenre !== null) setSelectedSubGenre(filters.subGenre);
                     if (filters.tag !== undefined && filters.tag !== null) setSelectedTag(filters.tag);
                     if (filters.characters?.length) setSelectedCharacters(filters.characters);
+                    if (filters.units?.length) setSelectedUnitIds(filters.units);
                     if (filters.search) setSearchQuery(filters.search);
                     if (filters.sortBy) setSortBy(filters.sortBy);
                     if (filters.sortOrder) setSortOrder(filters.sortOrder);
@@ -292,6 +295,7 @@ function MysekaiContent() {
             subGenre: selectedSubGenre,
             tag: selectedTag,
             characters: selectedCharacters,
+            units: selectedUnitIds,
             search: searchQuery,
             sortBy,
             sortOrder,
@@ -308,6 +312,7 @@ function MysekaiContent() {
         if (selectedSubGenre !== null) params.set("subGenre", String(selectedSubGenre));
         if (selectedTag !== null) params.set("tag", String(selectedTag));
         if (selectedCharacters.length > 0) params.set("characters", selectedCharacters.join(","));
+        if (selectedUnitIds.length > 0) params.set("units", selectedUnitIds.join(","));
         if (searchQuery) params.set("search", searchQuery);
         if (sortBy !== "id") params.set("sortBy", sortBy);
         if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
@@ -315,7 +320,7 @@ function MysekaiContent() {
         const queryString = params.toString();
         const newUrl = queryString ? `/mysekai?${queryString}` : "/mysekai";
         router.replace(newUrl, { scroll: false });
-    }, [selectedGenre, selectedSubGenre, selectedTag, selectedCharacters, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
+    }, [selectedGenre, selectedSubGenre, selectedTag, selectedCharacters, selectedUnitIds, searchQuery, sortBy, sortOrder, router, filtersInitialized]);
 
     useEffect(() => {
         // document.title = "Snowy SekaiViewer - 家具图鉴"; // Moved to metadata

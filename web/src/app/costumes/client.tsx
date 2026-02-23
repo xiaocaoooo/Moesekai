@@ -43,6 +43,7 @@ function CostumesContent() {
     const [selectedRarities, setSelectedRarities] = useState<string[]>([]);
     const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
     const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
+    const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
     const [onlyRelatedCardCostumes, setOnlyRelatedCardCostumes] = useState(false); // New filter state
 
     // Sort states
@@ -67,12 +68,13 @@ function CostumesContent() {
         const rarities = searchParams.get("rarities");
         const genders = searchParams.get("genders");
         const chars = searchParams.get("characters");
+        const units = searchParams.get("units");
         const search = searchParams.get("search");
         const sort = searchParams.get("sortBy");
         const order = searchParams.get("sortOrder");
         const related = searchParams.get("related"); // New param
 
-        const hasUrlParams = partTypes || sources || rarities || genders || chars || search || sort || order || related;
+        const hasUrlParams = partTypes || sources || rarities || genders || chars || units || search || sort || order || related;
 
         if (hasUrlParams) {
             if (partTypes) setSelectedPartTypes(partTypes.split(","));
@@ -80,6 +82,7 @@ function CostumesContent() {
             if (rarities) setSelectedRarities(rarities.split(","));
             if (genders) setSelectedGenders(genders.split(","));
             if (chars) setSelectedCharacters(chars.split(",").map(Number));
+            if (units) setSelectedUnitIds(units.split(","));
             if (search) setSearchQuery(search);
             if (sort) setSortBy(sort);
             if (order) setSortOrder(order as "asc" | "desc");
@@ -96,6 +99,7 @@ function CostumesContent() {
                     if (filters.genders?.length) setSelectedGenders(filters.genders); else if (filters.gender) setSelectedGenders([filters.gender]);
 
                     if (filters.characters?.length) setSelectedCharacters(filters.characters);
+                    if (filters.units?.length) setSelectedUnitIds(filters.units);
                     if (filters.search) setSearchQuery(filters.search);
                     if (filters.sortBy) setSortBy(filters.sortBy);
                     if (filters.sortOrder) setSortOrder(filters.sortOrder);
@@ -118,6 +122,7 @@ function CostumesContent() {
             rarities: selectedRarities,
             genders: selectedGenders,
             characters: selectedCharacters,
+            units: selectedUnitIds,
             search: searchQuery,
             sortBy,
             sortOrder,
@@ -136,6 +141,7 @@ function CostumesContent() {
         if (selectedRarities.length > 0) params.set("rarities", selectedRarities.join(","));
         if (selectedGenders.length > 0) params.set("genders", selectedGenders.join(","));
         if (selectedCharacters.length > 0) params.set("characters", selectedCharacters.join(","));
+        if (selectedUnitIds.length > 0) params.set("units", selectedUnitIds.join(","));
         if (searchQuery) params.set("search", searchQuery);
         if (sortBy !== "id") params.set("sortBy", sortBy);
         if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
@@ -144,7 +150,7 @@ function CostumesContent() {
         const queryString = params.toString();
         const newUrl = queryString ? `/costumes?${queryString}` : "/costumes";
         router.replace(newUrl, { scroll: false });
-    }, [selectedPartTypes, selectedSources, selectedRarities, selectedGenders, selectedCharacters, searchQuery, sortBy, sortOrder, onlyRelatedCardCostumes, router, filtersInitialized]);
+    }, [selectedPartTypes, selectedSources, selectedRarities, selectedGenders, selectedCharacters, selectedUnitIds, searchQuery, sortBy, sortOrder, onlyRelatedCardCostumes, router, filtersInitialized]);
 
     useEffect(() => {
         async function fetchData() {
@@ -257,6 +263,7 @@ function CostumesContent() {
         setSelectedRarities([]);
         setSelectedGenders([]);
         setSelectedCharacters([]);
+        setSelectedUnitIds([]);
         setOnlyRelatedCardCostumes(false);
         resetDisplayCount();
     };
@@ -291,6 +298,8 @@ function CostumesContent() {
                         <CostumeFilters
                             selectedCharacters={selectedCharacters}
                             onCharacterChange={setSelectedCharacters}
+                            selectedUnitIds={selectedUnitIds}
+                            onUnitIdsChange={setSelectedUnitIds}
                             selectedPartTypes={selectedPartTypes}
                             onPartTypeChange={setSelectedPartTypes}
                             selectedSources={selectedSources}

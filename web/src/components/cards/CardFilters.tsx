@@ -11,6 +11,10 @@ interface CardFiltersProps {
     selectedCharacters: number[];
     onCharacterChange: (chars: number[]) => void;
 
+    // Unit filter
+    selectedUnitIds: string[];
+    onUnitIdsChange: (units: string[]) => void;
+
     // Attribute filter
     selectedAttrs: CardAttribute[];
     onAttrChange: (attrs: CardAttribute[]) => void;
@@ -82,6 +86,8 @@ const ATTR_ICONS: Record<CardAttribute, string> = {
 export default function CardFilters({
     selectedCharacters,
     onCharacterChange,
+    selectedUnitIds,
+    onUnitIdsChange,
     selectedAttrs,
     onAttrChange,
     selectedRarities,
@@ -101,7 +107,6 @@ export default function CardFilters({
     filteredCards,
 }: CardFiltersProps) {
 
-    const [selectedUnitIds, setSelectedUnitIds] = React.useState<string[]>([]);
     const supplyTypes = useCardSupplyTypeMapping();
 
     const toggleCharacter = (id: number) => {
@@ -152,11 +157,13 @@ export default function CardFilters({
         if (!unit) return;
 
         if (selectedUnitIds.includes(unitId)) {
-            setSelectedUnitIds(selectedUnitIds.filter(id => id !== unitId));
+            // Remove this unit and its characters
+            onUnitIdsChange(selectedUnitIds.filter(id => id !== unitId));
             const newChars = selectedCharacters.filter(c => !unit.charIds.includes(c));
             onCharacterChange(newChars);
         } else {
-            setSelectedUnitIds([...selectedUnitIds, unitId]);
+            // Add this unit and its characters
+            onUnitIdsChange([...selectedUnitIds, unitId]);
             const newChars = [...new Set([...selectedCharacters, ...unit.charIds])];
             onCharacterChange(newChars);
         }
@@ -176,7 +183,6 @@ export default function CardFilters({
 
     const handleReset = () => {
         onReset();
-        setSelectedUnitIds([]);
     };
 
     return (

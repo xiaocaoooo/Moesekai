@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import MainLayout from "@/components/MainLayout";
 import CardFilters from "@/components/cards/CardFilters";
 import SekaiCardThumbnail from "@/components/cards/SekaiCardThumbnail";
@@ -31,6 +32,7 @@ import {
 } from "@/lib/account";
 import Image from "next/image";
 import ExternalLink from "@/components/ExternalLink";
+import { useScrollRestore } from "@/hooks/useScrollRestore";
 
 const SERVER_OPTIONS: { value: ServerType; label: string }[] = [
     { value: "cn", label: "简中服" },
@@ -61,9 +63,26 @@ interface CardSupply {
     cardSupplyType: string;
 }
 
+// Format upload time in a way that's consistent between server and client
+function formatUploadTime(uploadTime: string): string {
+    try {
+        const date = new Date(uploadTime);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hour = String(date.getHours()).padStart(2, '0');
+        const minute = String(date.getMinutes()).padStart(2, '0');
+        return `${month}-${day} ${hour}:${minute}`;
+    } catch {
+        return uploadTime;
+    }
+}
+
 // ==================== Main Component ====================
 
 function MyCardsContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
     // Account state
     const [accounts, setAccountsList] = useState<MoesekaiAccount[]>([]);
     const [activeAccount, setActiveAcc] = useState<MoesekaiAccount | null>(null);
@@ -78,9 +97,11 @@ function MyCardsContent() {
     const [userError, setUserError] = useState<string | null>(null);
     const [isTwFallback, setIsTwFallback] = useState(false);
     const [uploadTime, setUploadTime] = useState<string | null>(null);
+    const [filtersInitialized, setFiltersInitialized] = useState(false);
 
     // Filter states (same as /cards)
     const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
+    const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
     const [selectedAttrs, setSelectedAttrs] = useState<CardAttribute[]>([]);
     const [selectedRarities, setSelectedRarities] = useState<CardRarityType[]>([]);
     const [selectedSupplyTypes, setSelectedSupplyTypes] = useState<string[]>([]);
@@ -92,8 +113,105 @@ function MyCardsContent() {
     // Ownership filter
     const [ownershipFilter, setOwnershipFilter] = useState<"all" | "owned" | "missing">("all");
 
-    // Pagination
-    const [displayCount, setDisplayCount] = useState(30);
+    // Pagination with scroll restoration
+    const { displayCount, loadMore, resetDisplayCount } = useScrollRestore({
+        storageKey: "my-cards",
+        defaultDisplayCount: 30,
+        increment: 30,
+        isReady: !isLoading && !isFetchingUser,
+    });
+
+    // Storage key
+    const STORAGE_KEY = "my_cards_filters";
+
+    // Initialize from URL params first, then fallback to sessionStorage
+    useEffect(() => {
+        const chars = searchParams.get("characters");
+        const units = searchParams.get("units");
+        const attrs = searchParams.get("attrs");
+        const rarities = searchParams.get("rarities");
+        const supplyTypes = searchParams.get("supplyTypes");
+        const supportUnits = searchParams.get("supportUnits");
+        const search = searchParams.get("search");
+        const sort = searchParams.get("sortBy");
+        const order = searchParams.get("sortOrder");
+        const ownership = searchParams.get("ownership");
+
+        const hasUrlParams = chars || units || attrs || rarities || supplyTypes || supportUnits || search || sort || order || ownership;
+
+        if (hasUrlParams) {
+            if (chars) setSelectedCharacters(chars.split(",").map(Number));
+            if (units) setSelectedUnitIds(units.split(","));
+            if (attrs) setSelectedAttrs(attrs.split(",") as CardAttribute[]);
+            if (rarities) setSelectedRarities(rarities.split(",") as CardRarityType[]);
+            if (supplyTypes) setSelectedSupplyTypes(supplyTypes.split(","));
+            if (supportUnits) setSelectedSupportUnits(supportUnits.split(",") as SupportUnit[]);
+            if (search) setSearchQuery(search);
+            if (sort) setSortBy(sort);
+            if (order) setSortOrder(order as "asc" | "desc");
+            if (ownership) setOwnershipFilter(ownership as "all" | "owned" | "missing");
+        } else {
+            try {
+                const saved = sessionStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const filters = JSON.parse(saved);
+                    if (filters.characters?.length) setSelectedCharacters(filters.characters);
+                    if (filters.units?.length) setSelectedUnitIds(filters.units);
+                    if (filters.attrs?.length) setSelectedAttrs(filters.attrs);
+                    if (filters.rarities?.length) setSelectedRarities(filters.rarities);
+                    if (filters.supplyTypes?.length) setSelectedSupplyTypes(filters.supplyTypes);
+                    if (filters.supportUnits?.length) setSelectedSupportUnits(filters.supportUnits);
+                    if (filters.search) setSearchQuery(filters.search);
+                    if (filters.sortBy) setSortBy(filters.sortBy);
+                    if (filters.sortOrder) setSortOrder(filters.sortOrder);
+                    if (filters.ownershipFilter) setOwnershipFilter(filters.ownershipFilter);
+                }
+            } catch (e) {
+                console.log("Could not restore filters from sessionStorage");
+            }
+        }
+        setFiltersInitialized(true);
+    }, []);
+
+    // Save to sessionStorage and update URL when filters change
+    useEffect(() => {
+        if (!filtersInitialized) return;
+
+        const filters = {
+            characters: selectedCharacters,
+            units: selectedUnitIds,
+            attrs: selectedAttrs,
+            rarities: selectedRarities,
+            supplyTypes: selectedSupplyTypes,
+            supportUnits: selectedSupportUnits,
+            search: searchQuery,
+            sortBy,
+            sortOrder,
+            ownershipFilter,
+        };
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
+        } catch (e) {
+            console.log("Could not save filters to sessionStorage");
+        }
+
+        // Update URL
+        const params = new URLSearchParams();
+        if (selectedCharacters.length > 0) params.set("characters", selectedCharacters.join(","));
+        if (selectedUnitIds.length > 0) params.set("units", selectedUnitIds.join(","));
+        if (selectedAttrs.length > 0) params.set("attrs", selectedAttrs.join(","));
+        if (selectedRarities.length > 0) params.set("rarities", selectedRarities.join(","));
+        if (selectedSupplyTypes.length > 0) params.set("supplyTypes", selectedSupplyTypes.join(","));
+        if (selectedSupportUnits.length > 0) params.set("supportUnits", selectedSupportUnits.join(","));
+        if (searchQuery) params.set("search", searchQuery);
+        if (sortBy !== "rarity") params.set("sortBy", sortBy);
+        if (sortOrder !== "desc") params.set("sortOrder", sortOrder);
+        if (ownershipFilter !== "all") params.set("ownership", ownershipFilter);
+
+        const queryString = params.toString();
+        const newUrl = queryString ? `/my-cards?${queryString}` : "/my-cards";
+        router.replace(newUrl, { scroll: false });
+    }, [selectedCharacters, selectedUnitIds, selectedAttrs, selectedRarities, selectedSupplyTypes, selectedSupportUnits, searchQuery, sortBy, sortOrder, ownershipFilter, router, filtersInitialized]);
 
     // Load accounts
     useEffect(() => {
@@ -279,8 +397,8 @@ function MyCardsContent() {
         }
 
         // Filter released only (no spoiler on progress page)
-        const now = Date.now();
-        result = result.filter((c) => (c.releaseAt || c.archivePublishedAt || 0) <= now);
+        // Use a stable timestamp to avoid hydration mismatch
+        result = result.filter((c) => (c.releaseAt || c.archivePublishedAt || 0) <= Date.now());
 
         // Ownership filter
         if (ownershipFilter === "owned") {
@@ -336,13 +454,10 @@ function MyCardsContent() {
         return filteredCards.slice(0, displayCount);
     }, [filteredCards, displayCount]);
 
-    const loadMore = useCallback(() => {
-        setDisplayCount((prev) => prev + 30);
-    }, []);
-
     // Reset
     const resetFilters = useCallback(() => {
         setSelectedCharacters([]);
+        setSelectedUnitIds([]);
         setSelectedAttrs([]);
         setSelectedRarities([]);
         setSelectedSupplyTypes([]);
@@ -351,13 +466,14 @@ function MyCardsContent() {
         setSortBy("rarity");
         setSortOrder("desc");
         setOwnershipFilter("all");
-        setDisplayCount(30);
-    }, []);
+        resetDisplayCount();
+    }, [resetDisplayCount]);
 
     const handleSortChange = useCallback((newSortBy: string, newSortOrder: "asc" | "desc") => {
         setSortBy(newSortBy);
         setSortOrder(newSortOrder);
-    }, []);
+        resetDisplayCount();
+    }, [resetDisplayCount]);
 
     // Extra sort options for my-cards (user card data based)
     const extraSortOptions = useMemo(() => [
@@ -443,7 +559,7 @@ function MyCardsContent() {
                             <span className="text-sm font-bold text-primary-text">收集进度</span>
                             {uploadTime && (
                                 <span className="text-[11px] text-slate-400" title="数据上传时间">
-                                    数据时间: {new Date(uploadTime).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                                    数据时间: {formatUploadTime(uploadTime)}
                                 </span>
                             )}
                         </div>
@@ -491,6 +607,8 @@ function MyCardsContent() {
                         <CardFilters
                             selectedCharacters={selectedCharacters}
                             onCharacterChange={setSelectedCharacters}
+                            selectedUnitIds={selectedUnitIds}
+                            onUnitIdsChange={setSelectedUnitIds}
                             selectedAttrs={selectedAttrs}
                             onAttrChange={setSelectedAttrs}
                             selectedRarities={selectedRarities}
