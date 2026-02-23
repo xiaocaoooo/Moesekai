@@ -520,7 +520,7 @@ function MysekaiContent() {
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Filters - Side Panel */}
                 <div className="w-full lg:w-80 lg:shrink-0">
-                    <div className="lg:sticky lg:top-24">
+                    <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar">
                         <BaseFilters
                             title="筛选家具"
                             filteredCount={filteredFixtures.length}
