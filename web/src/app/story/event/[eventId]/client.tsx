@@ -251,7 +251,7 @@ export default function StoryEventDetailClient() {
                             {adminData && (
                                 <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
                                     <p className="text-xs text-slate-400 italic text-right">
-                                        剧情总结和章节翻译文本来源于moesekai，转载请表明出处。
+                                        剧情总结和章节翻译文本来源于moesekai（@雪莹ちゃん），转载请表明出处。
                                     </p>
                                 </div>
                             )}
@@ -313,15 +313,4 @@ export default function StoryEventDetailClient() {
                                         showImage={showEpImages}
                                     />
                                 ))
-                            ) : (
-                                <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                                    <p className="text-slate-500 mb-2">暂无章节信息</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </MainLayout>
-    );
-}
+    
